@@ -1,9 +1,12 @@
 #lambelme  标 转  yolov
 import json
-def lambelme_json_label_to_yolov_seg_label():
+'''
+会在同一目录下生成txt训练文件
+'''
+def lambelme_json_label_to_yolov_seg_label(json_path):
     import glob
     import numpy as np
-    json_path = "test_pics/test2/5/1/test2017/";
+    json_path = json_path;
     json_files = glob.glob(json_path + "/*.json")
     for json_file in json_files:
         # if json_file != r"C:\Users\jianming_ge\Desktop\code\handle_dataset\water_street\223.json":
@@ -26,4 +29,6 @@ def lambelme_json_label_to_yolov_seg_label():
             txt_content += "0 " + " ".join([" ".join([str(cell[0]), str(cell[1])]) for cell in norm_points_list]) + "\n"
             f.write(txt_content)
 
-lambelme_json_label_to_yolov_seg_label()
+if __name__=="__main__":
+    json_path = "test_pics/test2/5/1/test2017/"
+    lambelme_json_label_to_yolov_seg_label()

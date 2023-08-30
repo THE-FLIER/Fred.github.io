@@ -15,11 +15,11 @@ import os,sys
 from pycocotools import coco
 import numpy as np
 from PIL import Image
-
-source_folder = "./test_pics/test6/4_4/"#
-target_folder = "./test_pics/pic/test1"
-model = YOLO("models/best_new.pt")
-test = "./test_pics/test4/1/"
+'''
+line_30--进行预测，详细参数看：https://docs.ultralytics.com/modes/predict/#working-with-results
+line_40--进行推理可视化保存
+line_70--保存mask切割图片
+'''
 
 # 遍历文件夹中的所有文件
 def save_file(source_folder, target_folder):
@@ -67,45 +67,8 @@ def save_file(source_folder, target_folder):
                         res[mask > 0] = images[mask > 0]
                         #裁剪后的图
                         masked = res[y1:y2, x1:x2]
-                        if os.path.exists(test):
-                            pass
-                        else:
-                            os.makedirs("./test_pics/test4/1/")
                         cv2.imwrite(f"./test_pics/test6/4_4/book/4_4_{c}.jpg", masked)
-                        # cv2.imwrite(f"{source_folder}/book/1/1_2_{c}.jpg", masked)
                         c+=1
-                        #重新提取坐标为ploygon格式（坐标都存在一个列表中）
-                        # d = []  # polygon
-                        # coodrs = []
-                        # for j in i:
-                        #     coodrs.append(int(j[0]))
-                        #     coodrs.append(int(j[1]))
-                        # c.append(coodrs)
-                        # d.append(i[:, 0])
-                        # d.append(i[:, 1])
-
-
-                        # #显示mask
-                        # plt.subplots(111)
-                        # plt.imshow(roi, 'gray')
-
-                        # cv2.imwrite(f"test_pics/test3/{a+1}.jpg", masked)
-
-
-#返回True or False Bool类型
-def polygons_to_mask(img_shape, polygons):
-    '''
-    边界点生成mask
-    :param img_shape: [h,w]
-    :param polygons: labelme JSON中的边界点格式 [[x1,y1],[x2,y2],[x3,y3],...[xn,yn]]
-    :return:
-    '''
-    mask = np.zeros(img_shape, dtype=np.uint8)
-    mask = PIL.Image.fromarray(mask)
-    xy = list(map(tuple, polygons))
-    PIL.ImageDraw.Draw(mask).polygon(xy=xy, outline=1, fill=1)
-    mask = np.array(mask, dtype=bool)
-    return mask
 
 def polygons_to_mask2(img_shape, polygons):
     '''
@@ -119,27 +82,11 @@ def polygons_to_mask2(img_shape, polygons):
     # cv2.fillPoly(mask, polygons, 1) # 非int32 会报错
     cv2.fillConvexPoly(mask, polygons, 1)  # 非int32 会报错
     return mask
-def mask2box(mask):
-    '''从mask反算出其边框
-    mask：[h,w]  0、1组成的图片
-    1对应对象，只需计算1对应的行列号（左上角行列号，右下角行列号，就可以算出其边框）
-    '''
-    # np.where(mask==1)
-    index = np.argwhere(mask == 1)
-    rows = index[:, 0]
-    clos = index[:, 1]
-    # 解析左上角行列号
-    left_top_r = np.min(rows)  # y
-    left_top_c = np.min(clos)  # x
 
-    # 解析右下角行列号
-    right_bottom_r = np.max(rows)
-    right_bottom_c = np.max(clos)
+if __name__=="__main__":
+    source_folder = "./test_pics/test6/4_4/"#
+    target_folder = "./test_pics/pic/test1"
+    model = YOLO("models/best_new.pt")
 
-    return [left_top_c, left_top_r, right_bottom_c, right_bottom_r]  # [x1,y1,x2,y2] 对应Pascal VOC 2007 的bbox格式
-    # return [left_top_c, left_top_r, right_bottom_c - left_top_c,
-    #         right_bottom_r - left_top_r]  # [x1,y1,w,h] 对应COCO的bbox格式
+    save_file(source_folder,target_folder)
 
-save_file(source_folder,target_folder)
-# for image in os.listdir(image_dir):
-#     for image in
