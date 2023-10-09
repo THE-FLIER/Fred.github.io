@@ -1,22 +1,22 @@
-#训练脚本
+    ##训练脚本
 
---main.py
+    --main.py
 
-#推理脚本 
+    ##推理脚本 
 
---test_model.py
+    --test_model.py
 
-#labelme转成训练数据集
+    ##labelme转成训练数据集
 
-labelmetococo.py
+    labelmetococo.py
 
-#切割labelme json文件图片
+    ##切割labelme json文件图片
 
-poly_trans.py
+    poly_trans.py
 
 
-#关于服务部署
+    ##关于服务部署
 
-1.python app.py
+    1.python app.py 启动服务
 
-2.hub.py 为请求客户端，需输入图片以及保存路径。若需批次处理，需自行编写。
+    2.hub.py 为请求客户端，需输入图片以及保存路径，及两个参数。
