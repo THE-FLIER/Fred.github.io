@@ -1,12 +1,12 @@
 from flask import Flask, request, jsonify
 import torch
-import yaml
 from PIL import Image
 import base64
 import io
 import numpy as np
 import cv2
 from ultralytics import YOLO
+import pickle
 app = Flask(__name__)
 import json
 # 模型加载
@@ -28,11 +28,12 @@ def polygons_to_mask2(img_shape, polygons):
     return mask
 
 # 预测
-def predict(image):
+def predict(image,parament):
     # 预处理图片
     img = preprocess(image)
+    print(parament)
     with torch.no_grad():
-        out = model.predict(img, conf=0.7, save_txt=False, save_crop=False, boxes=False, device='cpu')
+        out = model.predict(img, conf=float(parament['conf']), save_txt=False, save_crop=False, boxes=False, device=parament['device'])
         for result in out:
             masks = result.masks  # Masks object for segmentation masks outputs
         coordinates = masks.xy
@@ -78,7 +79,7 @@ def transform(outputs):
         pil_img = Image.fromarray(img)
         # 编码为base64
         buff = io.BytesIO()
-        pil_img.save(buff, format="jpg")
+        pil_img.save(buff, format="PNG")
         img_str = base64.b64encode(buff.getvalue()).decode('utf-8')
         # 添加到列表
         image_list.append(img_str)
@@ -88,10 +89,16 @@ def transform(outputs):
 @app.route('/predict', methods=['POST'])
 def get_prediction():
     file = request.files['file']
+    parament = request.files['parament'].read()
+    parament = pickle.loads(parament)
     img_bytes = file.read()
-    result = predict(img_bytes)
+    result = predict(img_bytes, parament)
     result = transform(result)
     return jsonify({'content': result})
 
 if __name__ == '__main__':
-    app.run()
+    app.run(
+        host='172.16.1.152',
+        port=5000,
+        debug=True
+    )
