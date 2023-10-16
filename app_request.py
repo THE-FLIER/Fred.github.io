@@ -10,6 +10,9 @@ import pickle
 import hashlib
 import time
 import os
+from scipy.ndimage import gaussian_filter
+import asyncio
+
 app = Flask(__name__)
 import json
 # 模型加载
@@ -24,18 +27,6 @@ def generate_unique_id():
     return uid
 
 # 保存推理结果
-def save_inference_result(result):
-    unique_id = generate_unique_id() # 生成唯一标识符
-
-    # 创建子目录
-    subdir = os.path.join('app_results', unique_id)
-    os.makedirs(subdir, exist_ok=True)
-    for i in result:
-        timestamp = str(int(time.time() * 1000))
-        crop_path = subdir + f'{timestamp}.jpg'
-        cv2.imwrite(crop_path, i)
-    # 文件名为推理结果的索引加上时间戳后缀
-
 
 def polygons_to_mask2(img_shape, polygons):
     '''
@@ -54,9 +45,10 @@ def polygons_to_mask2(img_shape, polygons):
 def predict(image,parament):
     # 预处理图片
     img = preprocess(image)
+    img = np.asarray(img)
     print(parament)
     with torch.no_grad():
-        out = model.predict(img, conf=float(parament['conf']), save_txt=False, save_crop=False, boxes=False, device='0')
+        out = model.predict(img, conf=float(parament['conf']), save_txt=False, save_crop=False, boxes=False, retina_masks=True, device='0')
         for result in out:
             masks = result.masks  # Masks object for segmentation masks outputs
         coordinates = masks.xy
@@ -66,6 +58,7 @@ def predict(image,parament):
             h, w = result.orig_shape
             mask = polygons_to_mask2([h, w], i)
             mask = mask.astype(np.uint8)
+            # mask = gaussian_filter(mask, sigma=2)
 
             # mask所在坐标矩形框
             x = i[:, 0]
@@ -75,15 +68,17 @@ def predict(image,parament):
             x1 = int(min(x))
             x2 = int(max(x))
             # 创建与原图大小全黑图，用于提取.
-            img = np.asarray(img)
+
             res = np.zeros_like(img)
             # 提取>0部分到新图并进行裁剪
             res[mask > 0] = img[mask > 0]
+
             # 裁剪后的图
             masked = res[y1:y2, x1:x2]
             list1.append(masked)
-        save_inference_result(list1)
 
+        #推理照片保存
+        # save_results(list1)
         return list1
 
 
@@ -105,6 +100,18 @@ def transform(outputs):
         image_list.append(img_str)
     return image_list
 
+def save_results(result):
+    unique_id = generate_unique_id() # 生成唯一标识符
+    # 创建子目录
+    subdir = os.path.join('app_results', unique_id)
+    print(subdir)
+    os.makedirs(subdir, exist_ok=True)
+    for i in result:
+        timestamp = str(int(time.time() * 1000))
+        crop_path = os.path.join(subdir, f'{timestamp}.jpg')
+        print(crop_path)
+        cv2.imwrite(crop_path, i)
+    # 文件名为推理结果的索引加上时间戳后缀
 
 #接口
 @app.route('/predict', methods=['POST'])
@@ -118,9 +125,10 @@ def get_prediction():
 
     return jsonify({'content': result})
 
+
 if __name__ == '__main__':
     app.run(
         host='172.16.1.152',
         port=5000,
-        debug=True
+        debug=False,
     )
