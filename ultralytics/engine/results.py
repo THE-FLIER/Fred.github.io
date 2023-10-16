@@ -325,12 +325,9 @@ class Results(SimpleClass):
             return
         for d in self.boxes:
             save_one_box(d.xyxy,
-                         self.orig_img.copy(),
-<<<<<<< HEAD
-                         file=save_dir / self.names[int(d.cls)] / f'1_2_.jpg', #file=save_dir / self.names[int(d.cls)] / f'{file_name.stem}_.jpg',
-=======
-                         file=Path(save_dir) / self.names[int(d.cls)] / f'{Path(file_name).stem}.jpg',
->>>>>>> 4bd62a299c23c1ae7efb824529cd3349bf85a56f
+            self.orig_img.copy(),
+                #file=save_dir / self.names[int(d.cls)] / f'1_2_.jpg',
+                file=Path   (save_dir) / self.names[int(d.cls)] / f'{Path(file_name).stem}.jpg',
                          BGR=True)
 
     def tojson(self, normalize=False):

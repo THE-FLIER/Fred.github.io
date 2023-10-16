@@ -22,7 +22,6 @@ def ploy_trans(txt_dir,img_dir,img_save):
                     #json读取
                     with open(json_path) as f:
                         txt = json.load(f)
-
                     for point in txt['shapes']:
                         points = point['points']
                         points = np.int32(points)

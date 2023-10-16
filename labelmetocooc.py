@@ -31,4 +31,4 @@ def lambelme_json_label_to_yolov_seg_label(json_path):
 
 if __name__=="__main__":
     json_path = "test_pics/test2/5/1/test2017/"
-    lambelme_json_label_to_yolov_seg_label()
+    lambelme_json_label_to_yolov_seg_label(json_path)

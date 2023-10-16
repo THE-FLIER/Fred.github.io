@@ -24,7 +24,7 @@ line_70--保存mask切割图片
 # 遍历文件夹中的所有文件
 def save_file(source_folder, target_folder):
         # 检查文件是否为图像文件
-        c = 1
+
         for file_name in os.listdir(source_folder):
                 a = file_name.split('.')[0]
                 if file_name.endswith(".jpeg") or file_name.endswith(".jpg") or file_name.endswith(".png"):
@@ -43,16 +43,19 @@ def save_file(source_folder, target_folder):
                     for result in results:
                         masks = result.masks  # Masks object for segmentation masks outputs
                     coordinates = masks.xy
-                    b = 1
+                    c = 1
                     for i in coordinates:
                         #mask位置
                         h, w, _ = images.shape
                         mask = polygons_to_mask2([h, w], i)
                         mask = mask.astype(np.uint8)
-                        # 显示黑白mask
-                        # plt.subplot(111)
-                        # plt.imshow(mask, 'gray')
-                        # plt.show()
+                        kernel = np.ones((5, 5), np.uint8)
+                        # mask = cv2.erode(mask, kernel, iterations=2)
+                        mask = cv2.dilate(mask, kernel, iterations=3)
+                        #显示黑白mask
+                        plt.subplot(111)
+                        plt.imshow(mask, 'gray')
+                        plt.show()
 
                         # mask所在坐标矩形框
                         x = i[:, 0]
@@ -67,7 +70,7 @@ def save_file(source_folder, target_folder):
                         res[mask > 0] = images[mask > 0]
                         #裁剪后的图
                         masked = res[y1:y2, x1:x2]
-                        cv2.imwrite(f"./test_pics/test6/4_4/book/4_4_{c}.jpg", masked)
+                        cv2.imwrite(f"./test_pics/test6/new_image/{a}{c}.jpg", masked)
                         c+=1
 
 def polygons_to_mask2(img_shape, polygons):
@@ -84,9 +87,9 @@ def polygons_to_mask2(img_shape, polygons):
     return mask
 
 if __name__=="__main__":
-    source_folder = "./test_pics/test6/4_4/"#
+    source_folder = "./test_pics/1/"#
     target_folder = "./test_pics/pic/test1"
     model = YOLO("models/best_new.pt")
 
-    save_file(source_folder,target_folder)
+    save_file(source_folder, target_folder)
 
