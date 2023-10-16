@@ -7,12 +7,35 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 import pickle
+import hashlib
+import time
+import os
 app = Flask(__name__)
 import json
 # 模型加载
 
 model = "models/best_new.pt"
 model = YOLO(model)
+
+#unique signal
+def generate_unique_id():
+    timestamp = str(int(time.time() * 1000)) # 时间戳
+    uid = hashlib.md5(timestamp.encode()).hexdigest() # 使用MD5哈希函数生成唯一标识符
+    return uid
+
+# 保存推理结果
+def save_inference_result(result):
+    unique_id = generate_unique_id() # 生成唯一标识符
+
+    # 创建子目录
+    subdir = os.path.join('app_results', unique_id)
+    os.makedirs(subdir, exist_ok=True)
+    for i in result:
+        timestamp = str(int(time.time() * 1000))
+        crop_path = subdir + f'{timestamp}.jpg'
+        cv2.imwrite(crop_path, i)
+    # 文件名为推理结果的索引加上时间戳后缀
+
 
 def polygons_to_mask2(img_shape, polygons):
     '''
@@ -33,7 +56,7 @@ def predict(image,parament):
     img = preprocess(image)
     print(parament)
     with torch.no_grad():
-        out = model.predict(img, conf=float(parament['conf']), save_txt=False, save_crop=False, boxes=False, device=parament['device'])
+        out = model.predict(img, conf=float(parament['conf']), save_txt=False, save_crop=False, boxes=False, device='0')
         for result in out:
             masks = result.masks  # Masks object for segmentation masks outputs
         coordinates = masks.xy
@@ -59,19 +82,16 @@ def predict(image,parament):
             # 裁剪后的图
             masked = res[y1:y2, x1:x2]
             list1.append(masked)
+        save_inference_result(list1)
+
         return list1
 
 
 # 预处理
 def preprocess(image):
-
     return Image.open(io.BytesIO(image))
 
-# Base64转PIL Image
-def base64_to_pil(image):
-    img = Image.open(io.BytesIO(base64.b64decode(image)))
-    return img
-
+# 返回base64
 def transform(outputs):
     image_list = []
     for img in outputs:
@@ -85,6 +105,7 @@ def transform(outputs):
         image_list.append(img_str)
     return image_list
 
+
 #接口
 @app.route('/predict', methods=['POST'])
 def get_prediction():
@@ -94,6 +115,7 @@ def get_prediction():
     img_bytes = file.read()
     result = predict(img_bytes, parament)
     result = transform(result)
+
     return jsonify({'content': result})
 
 if __name__ == '__main__':
