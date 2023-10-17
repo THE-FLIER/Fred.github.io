@@ -27,8 +27,7 @@ def run(args):
     save_path = args.infer_results
     images = args.image_path
     confidence = args.conf
-    device = args.device
-    parament = {'conf': confidence, 'device': device}
+    parament = {'conf': confidence}
     os.makedirs(save_path, exist_ok=True)
     for i in os.listdir(images):
         if i.endswith('.jpg') or i.endswith('.png') :
@@ -41,7 +40,7 @@ def run(args):
                 crop_path = save_path+f'{name}_{index}.jpg'
                 cv2.imwrite(crop_path, i)
                 index += 1
-#
+
 def pre(img, paraments):
     parament_binary = pickle.dumps(paraments)
     files = {'file': open(img, 'rb').read(), 'parament': parament_binary}
@@ -54,17 +53,13 @@ def pre(img, paraments):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Hyperparams")
     parser.add_argument(
-
-        "--image_path", type=str, default="test_pics/total/1/1_1/", help="Path Of Image To Infer"
+        "--image_path", type=str, default="test_pics/1", help="Path Of Image To Infer"
     )
     parser.add_argument(
         "--infer_results", type=str, default="test_pics/crops/", help="Path Of Infer_Crops To Save"
     )
     parser.add_argument(
-        "--conf", type=str, default='0.7', help="Confidence Of Predict"
-    )
-    parser.add_argument(
-        "--device", type=str, default="0", help="device chose: cpu or 0(GPU)"
+        "--conf", type=str, default='0.6', help="Confidence Of Predict"
     )
     args = parser.parse_args()
     run(args)
