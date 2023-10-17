@@ -7,7 +7,8 @@ FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 RUN pip install --no-cache nvidia-tensorrt --index-url https://pypi.ngc.nvidia.com
 
 # Downloads to user config dir
-ADD https://ultralytics.com/assets/Arial.ttf https://ultralytics.com/assets/Arial.Unicode.ttf /root/.config/Ultralytics/
+#改动ADD https://ultralytics.com/assets/Arial.ttf https://ultralytics.com/assets/Arial.Unicode.ttf /root/.config/Ultralytics/
+ADD Arial.ttf Arial.Unicode.ttf /root/.config/Ultralytics/
 
 # Install linux packages
 # g++ required to build 'tflite_support' and 'lap' packages, libusb-1.0-0 required for 'tflite_support' package
@@ -25,15 +26,17 @@ WORKDIR /usr/src/ultralytics
 # Copy contents
 # COPY . /usr/src/app  (issues as not a .git directory)
 RUN git clone https://github.com/ultralytics/ultralytics /usr/src/ultralytics
-ADD https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt /usr/src/ultralytics/
+
+#改动ADD https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt /usr/src/ultralytics/
+ADD best_new.pt /usr/src/ultralytics/
 
 # Install pip packages
 RUN python3 -m pip install --upgrade pip wheel
 RUN pip install --no-cache -e ".[export]" thop albumentations comet pycocotools pytest-cov
 
 # Run exports to AutoInstall packages
-RUN yolo export model=tmp/yolov8n.pt format=edgetpu imgsz=32
-RUN yolo export model=tmp/yolov8n.pt format=ncnn imgsz=32
+RUN yolo export model=tmp/best_new.pt format=edgetpu imgsz=32
+RUN yolo export model=tmp/best_new.pt format=ncnn imgsz=32
 # Requires <= Python 3.10, bug with paddlepaddle==2.5.0
 RUN pip install --no-cache paddlepaddle==2.4.2 x2paddle
 # Fix error: `np.bool` was a deprecated alias for the builtin `bool`
