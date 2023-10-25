@@ -14,7 +14,7 @@ Clone repo and install [requirements.txt](https://github.com/ultralytics/yolov5/
 ```bash
 git clone https://github.com/ultralytics/yolov5  # clone
 cd yolov5
-pip install -r requirements.txt  # install
+pip install -r requirements_docker.txt  # install
 ```
 
 💡 ProTip! **Docker Image** is recommended for all Multi-GPU trainings. See [Docker Quickstart Guide](https://docs.ultralytics.com/yolov5/environments/docker_image_quickstart_tutorial/) <a href="https://hub.docker.com/r/ultralytics/yolov5"><img src="https://img.shields.io/docker/pulls/ultralytics/yolov5?logo=docker" alt="Docker Pulls"></a>

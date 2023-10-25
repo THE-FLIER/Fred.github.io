@@ -52,34 +52,40 @@ def predict(image,parament):
         out = model.predict(img, conf=float(parament['conf']), save_txt=False, save_crop=False, boxes=False, retina_masks=True, device='0')
         for result in out:
             masks = result.masks  # Masks object for segmentation masks outputs
-        coordinates = masks.xy
-        list1 = []
-        for i in coordinates:
-            # mask位置
-            h, w = result.orig_shape
-            mask = polygons_to_mask2([h, w], i)
-            mask = mask.astype(np.uint8)
-            # mask = gaussian_filter(mask, sigma=2)
+            coordinates = masks.xy
+            dict1 = {}
+            for i in coordinates:
+                # mask位置
+                h, w = result.orig_shape
+                mask = polygons_to_mask2([h, w], i)
+                mask = mask.astype(np.uint8)
 
-            # mask所在坐标矩形框
-            x = i[:, 0]
-            y = i[:, 1]
-            y1 = int(min(y))
-            y2 = int(max(y))
-            x1 = int(min(x))
-            x2 = int(max(x))
-            # 创建与原图大小全黑图，用于提取.
+                # mask所在坐标矩形框
+                x = i[:, 0]
+                y = i[:, 1]
+                y1 = int(min(y))
+                y2 = int(max(y))
+                x1 = int(min(x))
+                x2 = int(max(x))
 
-            res = np.zeros_like(img)
-            # 提取>0部分到新图并进行裁剪
-            res[mask > 0] = img[mask > 0]
+                # 创建与原图大小全黑图，用于提取.
+                res = np.zeros_like(img)
+                # 提取>0部分到新图并进行裁剪
+                res[mask > 0] = img[mask > 0]
 
-            # 裁剪后的图
-            masked = res[y1:y2, x1:x2]
-            list1.append(masked)
+                # 裁剪后的图
+                masked = res[y1:y2, x1:x2]
 
-        #推理照片保存
-        save_results(list1,dir)
+                # 将裁剪后的图像添加到字典中，键为左上角坐标
+                dict1[(x1, y1)] = masked
+
+        # 按照键（即左上角坐标）对字典进行排序
+        sorted_items = sorted(dict1.items())
+
+        # 从排序后的列表中提取图像，并将它们添加到新的列表中
+        list1 = [item[1] for item in sorted_items]
+        #保存到本地
+        #save_results(list1,dir)
         return list1
 
 

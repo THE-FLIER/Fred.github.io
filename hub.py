@@ -38,7 +38,8 @@ def run(args):
             index = 1
             for i in crops:
                 crop_path = save_path+f'{name}_{index}.jpg'
-                cv2.imwrite(crop_path, i)
+                i_rgb = cv2.cvtColor(i, cv2.COLOR_BGR2RGB)
+                cv2.imwrite(crop_path, i_rgb)
                 index += 1
 
 def pre(img, paraments):
@@ -53,7 +54,7 @@ def pre(img, paraments):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Hyperparams")
     parser.add_argument(
-        "--image_path", type=str, default="test_pics/1", help="Path Of Image To Infer"
+        "--image_path", type=str, default="test_pics/1/", help="Path Of Image To Infer"
     )
     parser.add_argument(
         "--infer_results", type=str, default="test_pics/crops/", help="Path Of Infer_Crops To Save"
