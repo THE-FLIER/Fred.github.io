@@ -16,10 +16,14 @@ def base64_to_pil(image):
 #返回数据处理
 def get_crop(output):
     img_list = []
-    for i in output:
-        outputs = base64_to_pil(i)
-        outputs = np.asarray(outputs)
-        img_list.append(outputs)
+    if 'NONE' not in output:
+        for i in output:
+            outputs = base64_to_pil(i)
+            outputs = np.asarray(outputs)
+            img_list.append(outputs)
+    else:
+        img_list = False
+
     return img_list
 
 #保存图片
@@ -36,10 +40,15 @@ def run(args):
             pre_out = pre(img_path, parament)
             crops = get_crop(pre_out)
             index = 1
-            for i in crops:
-                crop_path = save_path+f'{name}_{index}.jpg'
-                cv2.imwrite(crop_path, i)
-                index += 1
+            if crops:
+                for i in crops:
+                    crop_path = save_path+f'{name}_{index}.jpg'
+                    i_rgb = cv2.cvtColor(i, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(crop_path, i_rgb)
+                    index += 1
+            else:
+                print(f'Images predict:{crops}')
+
 
 def pre(img, paraments):
     parament_binary = pickle.dumps(paraments)
@@ -53,7 +62,7 @@ def pre(img, paraments):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Hyperparams")
     parser.add_argument(
-        "--image_path", type=str, default="test_pics/1", help="Path Of Image To Infer"
+        "--image_path", type=str, default="test_pics/1/2/", help="Path Of Image To Infer"
     )
     parser.add_argument(
         "--infer_results", type=str, default="test_pics/crops/", help="Path Of Infer_Crops To Save"

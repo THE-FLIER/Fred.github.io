@@ -32,7 +32,7 @@ Clone the YOLOv5 repository and install the [requirements.txt](https://github.co
 ```bash
 git clone https://github.com/ultralytics/yolov5  # clone
 cd yolov5
-pip install -r requirements.txt  # install
+pip install -r requirements_docker.txt  # install
 ```
 
 ## Step 3: Run YOLOv5 🚀 on the VM
