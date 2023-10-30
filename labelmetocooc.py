@@ -17,10 +17,10 @@ def lambelme_json_label_to_yolov_seg_label(json_path):
         json_info = json.load(f)
         # print(json_info.keys())
         #img = cv2.imread(os.path.join(json_path, json_info["imagePath"]))
-        height=1440
-        width=2560 
+        height = 1440
+        width = 2560
         np_w_h = np.array([[width, height]], np.int32)
-        txt_file = 'datasets/bookshelf - 副本/labels/train/'+os.path.basename(json_file.replace(".json", ".txt"))
+        txt_file = 'datasets/bookshelf/labels/train/'+os.path.basename(json_file)
         f = open(txt_file, "a")
         for point_json in json_info["shapes"]:
             txt_content = ""

@@ -33,7 +33,7 @@ def save_file(source_folder, target_folder):
                     images = cv2.imread(source_path)
 
                     #进行预测
-                    results = model.predict(source_path, conf=0.5, save_txt=False, save_crop=False, boxes=False, device='0')
+                    results = model.predict(source_path, conf=0.3, imgsz=1280, save_txt=False, save_crop=False, boxes=False, device='0')
 
                     #预测可视化图片并保存
                     annotated = results[0].plot()
@@ -41,6 +41,10 @@ def save_file(source_folder, target_folder):
 
                     #获取mask
                     for result in results:
+                        im_array = result.plot()  # plot a BGR numpy array of predictions
+                        im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
+                        im.show()  # show image
+                        # im.save(f"{target_folder}results.jpg")  # save image
                         masks = result.masks  # Masks object for segmentation masks outputs
                     coordinates = masks.xy
 
