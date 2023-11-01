@@ -20,16 +20,18 @@ def lambelme_json_label_to_yolov_seg_label(json_path):
         height = 1440
         width = 2560
         np_w_h = np.array([[width, height]], np.int32)
-        txt_file = 'datasets/bookshelf/labels/train/'+os.path.basename(json_file)
-        f = open(txt_file, "a")
+        txt_file = os.path.basename(json_file)
+        txt_file = f'datasets/bookshelf/labels/train/{txt_file[:-5]}.txt'
+        f = open(txt_file, "w")
         for point_json in json_info["shapes"]:
             txt_content = ""
             np_points = np.array(point_json["points"], np.int32)
             norm_points = np_points / np_w_h
             norm_points_list = norm_points.tolist()
-            txt_content += "0" + " ".join([" ".join([str(cell[0]), str(cell[1])]) for cell in norm_points_list]) + "\n"
+            txt_content += "0 " + " ".join([" ".join([str(cell[0]), str(cell[1])]) for cell in norm_points_list]) + "\n"
             f.write(txt_content)
 
+
 if __name__=="__main__":
-    json_path = "datasets/bookshelf/labels/test/"
+    json_path = "datasets/bookshelf/test/"
     lambelme_json_label_to_yolov_seg_label(json_path)
