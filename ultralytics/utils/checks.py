@@ -228,12 +228,12 @@ def check_python(minimum: str = '3.8.0') -> bool:
 
 
 @TryExcept()
-def check_requirements(requirements=ROOT.parent / 'requirements.txt', exclude=(), install=True, cmds=''):
+def check_requirements(requirements=ROOT.parent / 'requirements_docker.txt', exclude=(), install=True, cmds=''):
     """
     Check if installed dependencies meet YOLOv8 requirements and attempt to auto-update if needed.
 
     Args:
-        requirements (Union[Path, str, List[str]]): Path to a requirements.txt file, a single package requirement as a
+        requirements (Union[Path, str, List[str]]): Path to a requirements_docker.txt file, a single package requirement as a
             string, or a list of package requirements as strings.
         exclude (Tuple[str]): Tuple of package names to exclude from checking.
         install (bool): If True, attempt to auto-update packages that don't meet requirements.
@@ -243,8 +243,8 @@ def check_requirements(requirements=ROOT.parent / 'requirements.txt', exclude=()
         ```python
         from ultralytics.utils.checks import check_requirements
 
-        # Check a requirements.txt file
-        check_requirements('path/to/requirements.txt')
+        # Check a requirements_docker.txt file
+        check_requirements('path/to/requirements_docker.txt')
 
         # Check a single package
         check_requirements('ultralytics>=8.0.0')
@@ -256,7 +256,7 @@ def check_requirements(requirements=ROOT.parent / 'requirements.txt', exclude=()
     prefix = colorstr('red', 'bold', 'requirements:')
     check_python()  # check python version
     check_torchvision()  # check torch-torchvision compatibility
-    if isinstance(requirements, Path):  # requirements.txt file
+    if isinstance(requirements, Path):  # requirements_docker.txt file
         file = requirements.resolve()
         assert file.exists(), f'{prefix} {file} not found, check failed.'
         with file.open() as f:

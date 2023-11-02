@@ -1,46 +1,39 @@
-import json
-import cv2
+import os
+import shutil
 import numpy as np
-import requests
-import base64
-from PIL import Image
-import io
-import  os
-def base64_to_pil(image):
-    img = Image.open(io.BytesIO(base64.b64decode(image)))
-    return img
-#请求
-def pre(img):
 
-    files = {'file': open(image, 'rb').read()}
-    url = 'http://localhost:5000/predict'
-    response = requests.post(url, files=files)
-    output = response.json()["content"]
+# 定义源文件夹和目标文件夹
+src_folder = './datasets/bookshelf-point(4)/images/train/'
+dst_folder = './datasets/bookshelf-point(4)/images/val/'
 
-    return output
+# 定义源标签文件夹和目标标签文件夹
+src_label_folder = './datasets/bookshelf-point(4)/labels/train/'
+dst_label_folder = './datasets/bookshelf-point(4)/labels/val/'
 
-#返回数据处理
-def get_crop(output):
-    img_list = []
-    for i in output:
-        outputs = base64_to_pil(i)
-        outputs = np.asarray(outputs)
-        img_list.append(outputs)
-    return img_list
+# 获取源文件夹中的所有文件
+all_files = os.listdir(src_folder)
 
-#保存图片
-def run(save_path, images):
-    name, ext = os.path.splitext(os.path.basename(images))
+# 随机选择20%的文件作为验证集
+val_files = np.random.choice(all_files, size=int(0.2 * len(all_files)), replace=False)
 
-    pre_out = pre(images)
-    crops = get_crop(pre_out)
-    index = 1
-    for i in crops:
-        image = i
-        cv2.imwrite(save_path+f'{name}_{index}.jpg', image)
-        index += 1
+# 将选中的文件和对应的标签移动到目标文件夹
+for file in val_files:
+    # 移动图片
+    shutil.move(os.path.join(src_folder, file), os.path.join(dst_folder, file))
 
-if __name__ == '__main__':
-    image = "test_pics/total/1/1_1/1_1_1.jpg"
-    save_path = "test_pics/crops/"
-    run(save_path, image)
+    # 移动对应的标签
+    label_file = file[:-4] + '.txt'  # 假设标签文件是.txt格式，并且和图片文件名相同
+    shutil.move(os.path.join(src_label_folder, label_file), os.path.join(dst_label_folder, label_file))
+
+# def copy_images(src_dir, dst_dir):
+#     for dirpath, dirnames, filenames in os.walk(src_dir):
+#         for filename in filenames:
+#             if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+#                 src_file = os.path.join(dirpath, filename)
+#                 shutil.copy(src_file, dst_dir)
+#
+# # 移动文件
+# src_dir = './Original'
+# dst_dir = './total'
+#
+# copy_images(src_dir, dst_dir)

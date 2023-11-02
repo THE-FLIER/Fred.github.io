@@ -15,12 +15,13 @@ from ultralytics.utils import (ASSETS, DEFAULT_CFG, DEFAULT_CFG_DICT, DEFAULT_CF
 # Define valid tasks and modes
 MODES = 'train', 'val', 'predict', 'export', 'track', 'benchmark'
 TASKS = 'detect', 'segment', 'classify', 'pose'
-TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'coco8-seg.yaml', 'classify': 'imagenet100', 'pose': 'coco8-pose.yaml'}
+#TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'coco8-seg.yaml', 'classify': 'imagenet100', 'pose': 'coco8-pose.yaml'}
+TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'bookshelf-seg.yaml', 'classify': 'imagenet100', 'pose': 'bookshelf-point.yaml'}
 TASK2MODEL = {
     'detect': 'yolov8n.pt',
-    'segment': 'yolov8n-seg.pt',
+    'segment': 'yolov8l-seg.pt',
     'classify': 'yolov8n-cls.pt',
-    'pose': 'yolov8n-pose.pt'}
+    'pose': 'yolov8x-pose-p6.pt'}
 TASK2METRIC = {
     'detect': 'metrics/mAP50-95(B)',
     'segment': 'metrics/mAP50-95(M)',

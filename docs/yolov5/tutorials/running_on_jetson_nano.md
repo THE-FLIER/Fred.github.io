@@ -49,7 +49,7 @@ git clone https://github.com/ultralytics/yolov5
 
 ```sh
 cd yolov5
-vi requirements.txt
+vi requirements_docker.txt
 ```
 
 - **Step 5.** Edit the following lines. Here you need to press **i** first to enter editing mode. Press **ESC**, then type **:wq** to save and quit
@@ -70,7 +70,7 @@ sudo apt install -y libfreetype6-dev
 - **Step 7.** Install the necessary packages
 
 ```sh
-pip3 install -r requirements.txt
+pip3 install -r requirements_docker.txt
 ```
 
 ## Install PyTorch and Torchvision

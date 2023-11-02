@@ -61,7 +61,7 @@ Once you have logged in to your instance, clone the repository and install the d
 ```bash
 git clone https://github.com/ultralytics/yolov5  # clone
 cd yolov5
-pip install -r requirements.txt  # install
+pip install -r requirements_docker.txt  # install
 ```
 
 Then, start training, testing, detecting, and exporting YOLOv5 models:

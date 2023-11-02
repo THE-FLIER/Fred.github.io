@@ -128,7 +128,7 @@ FastSAM is also available directly from the [https://github.com/CASIA-IVA-Lab/Fa
 3. Navigate to the cloned repository and install the required packages:
    ```shell
    cd FastSAM
-   pip install -r requirements.txt
+   pip install -r requirements_docker.txt
    ```
 
 4. Install the CLIP model:
