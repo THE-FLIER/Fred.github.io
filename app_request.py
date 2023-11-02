@@ -46,6 +46,7 @@ def predict(image,parament):
     # 预处理图片
     img = preprocess(image)
     img = np.asarray(img)
+    dir = make_file(img)
     print(parament)
     with torch.no_grad():
         out = model.predict(img, conf=float(parament['conf']), save_txt=False, save_crop=False, boxes=False, retina_masks=True, device='0')
@@ -78,7 +79,7 @@ def predict(image,parament):
             list1.append(masked)
 
         #推理照片保存
-        # save_results(list1)
+        save_results(list1,dir)
         return list1
 
 
@@ -99,18 +100,25 @@ def transform(outputs):
         # 添加到列表
         image_list.append(img_str)
     return image_list
-
-def save_results(result):
-    unique_id = generate_unique_id() # 生成唯一标识符
-    # 创建子目录
-    subdir = os.path.join('app_results', unique_id)
-    print(subdir)
+def make_file(img):
+    unique_id = str(generate_unique_id())
+    subdir = os.path.join('results', unique_id)
     os.makedirs(subdir, exist_ok=True)
-    for i in result:
-        timestamp = str(int(time.time() * 1000))
-        crop_path = os.path.join(subdir, f'{timestamp}.jpg')
-        print(crop_path)
-        cv2.imwrite(crop_path, i)
+    filename = f'{int(time.time() * 1000)}.jpg'
+    file_path = os.path.join(subdir, filename)
+    cv2.imwrite(file_path, img)
+
+    return subdir
+
+def save_results(results, input_dir):
+    unique_id = str(generate_unique_id())
+    subdir = os.path.join(input_dir, unique_id)
+    os.makedirs(subdir, exist_ok=True)
+
+    for i, result in enumerate(results):
+        filename = f'{i}_{int(time.time() * 1000)}.jpg'
+        file_path = os.path.join(subdir, filename)
+        cv2.imwrite(file_path, result)
     # 文件名为推理结果的索引加上时间戳后缀
 
 #接口
@@ -125,10 +133,8 @@ def get_prediction():
 
     return jsonify({'content': result})
 
-
 if __name__ == '__main__':
-    app.run(
-        host='172.16.1.152',
-        port=5000,
-        debug=False,
-    )
+    # host = os.environ.get('APP_HOST')
+    # port = os.environ.get('APP_PORT')
+
+    app.run(host='172.16.1.152', port=5000, debug=False)

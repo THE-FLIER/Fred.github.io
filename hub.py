@@ -59,7 +59,7 @@ if __name__ == '__main__':
         "--infer_results", type=str, default="test_pics/crops/", help="Path Of Infer_Crops To Save"
     )
     parser.add_argument(
-        "--conf", type=str, default='0.6', help="Confidence Of Predict"
+        "--conf", type=str, default='0.7', help="Confidence Of Predict"
     )
     args = parser.parse_args()
     run(args)
