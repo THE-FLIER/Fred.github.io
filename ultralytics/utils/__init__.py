@@ -768,7 +768,7 @@ class SettingsManager(dict):
         self.version = version
         self.defaults = {
             'settings_version': version,
-            'datasets_dir': str(datasets_root / 'datasets'),
+            'datasets_dir': str(datasets_root / 'dataset'),
             'weights_dir': str(root / 'weights'),
             'runs_dir': str(root / 'runs'),
             'uuid': hashlib.sha256(str(uuid.getnode()).encode()).hexdigest(),
@@ -846,7 +846,7 @@ def url2file(url):
 # Check first-install steps
 PREFIX = colorstr('Ultralytics: ')
 SETTINGS = SettingsManager()  # initialize settings
-DATASETS_DIR = Path(SETTINGS['datasets_dir'])  # global datasets directory
+DATASETS_DIR = Path(SETTINGS['datasets_dir'])  # global dataset directory
 ENVIRONMENT = 'Colab' if is_colab() else 'Kaggle' if is_kaggle() else 'Jupyter' if is_jupyter() else \
     'Docker' if is_docker() else platform.system()
 TESTS_RUNNING = is_pytest_running() or is_github_actions_ci()

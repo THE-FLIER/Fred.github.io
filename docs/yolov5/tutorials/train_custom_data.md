@@ -1,6 +1,6 @@
 ---
 comments: true
-description: Learn how to train your data on custom datasets using YOLOv5. Simple and updated guide on collection and organization of images, labelling, model training and deployment.
+description: Learn how to train your data on custom dataset using YOLOv5. Simple and updated guide on collection and organization of images, labelling, model training and deployment.
 keywords: YOLOv5, train on custom dataset, image collection, model training, object detection, image labelling, Ultralytics, PyTorch, machine learning
 ---
 
@@ -93,7 +93,7 @@ Now continue with `2. Select a Model`.
 
 ```yaml
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
-path: ../datasets/coco128  # dataset root dir
+path: ../dataset/coco128  # dataset root dir
 train: images/train2017  # train images (relative to 'path') 128 images
 val: images/train2017  # val images (relative to 'path') 128 images
 test:  # test images (optional)
@@ -129,8 +129,8 @@ The label file corresponding to the above image contains 2 persons (class `0`) a
 Organize your train and val images and labels according to the example below. YOLOv5 assumes  `/coco128` is inside a `/datasets` directory **next to** the `/yolov5` directory. **YOLOv5 locates labels automatically for each image** by replacing the last instance of `/images/` in each image path with `/labels/`. For example:
 
 ```bash
-../datasets/coco128/images/im0.jpg  # image
-../datasets/coco128/labels/im0.txt  # label
+../dataset/coco128/images/im0.jpg  # image
+../dataset/coco128/labels/im0.txt  # label
 ```
 
 <p align="center"><img width="700" src="https://user-images.githubusercontent.com/26833433/134436012-65111ad1-9541-4853-81a6-f19a3468b75f.png"></p>

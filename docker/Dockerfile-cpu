@@ -46,4 +46,4 @@ RUN rm -rf tmp
 # t=ultralytics/ultralytics:latest-cpu && sudo docker run -it --ipc=host $t
 
 # Pull and Run with local volume mounted
-# t=ultralytics/ultralytics:latest-cpu && sudo docker pull $t && sudo docker run -it --ipc=host -v "$(pwd)"/datasets:/usr/src/datasets $t
+# t=ultralytics/ultralytics:latest-cpu && sudo docker pull $t && sudo docker run -it --ipc=host -v "$(pwd)"/dataset:/usr/src/dataset $t

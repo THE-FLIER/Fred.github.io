@@ -3,12 +3,12 @@ import shutil
 import numpy as np
 
 # 定义源文件夹和目标文件夹
-src_folder = './datasets/bookshelf-point(4)/images/train/'
-dst_folder = './datasets/bookshelf-point(4)/images/val/'
+src_folder = 'dataset/bookshelf-point(4)/images/train/'
+dst_folder = 'dataset/bookshelf-point(4)/images/val/'
 
 # 定义源标签文件夹和目标标签文件夹
-src_label_folder = './datasets/bookshelf-point(4)/labels/train/'
-dst_label_folder = './datasets/bookshelf-point(4)/labels/val/'
+src_label_folder = 'dataset/bookshelf-point(4)/labels/train/'
+dst_label_folder = 'dataset/bookshelf-point(4)/labels/val/'
 
 # 获取源文件夹中的所有文件
 all_files = os.listdir(src_folder)

@@ -58,7 +58,7 @@ def convert_coco(labels_dir='../coco/annotations/', use_segments=False, use_keyp
         ```python
         from ultralytics.data.converter import convert_coco
 
-        convert_coco('../datasets/coco/annotations/', use_segments=True, use_keypoints=False, cls91to80=True)
+        convert_coco('../dataset/coco/annotations/', use_segments=True, use_keypoints=False, cls91to80=True)
         ```
 
     Output:

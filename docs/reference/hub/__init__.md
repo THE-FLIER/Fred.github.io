@@ -1,5 +1,5 @@
 ---
-description: Explore Ultralytics hub functions for model resetting, checking datasets, model exporting and more. Easy-to-follow instructions provided.
+description: Explore Ultralytics hub functions for model resetting, checking dataset, model exporting and more. Easy-to-follow instructions provided.
 keywords: Ultralytics, hub functions, model export, dataset check, reset model, YOLO Docs
 ---
 

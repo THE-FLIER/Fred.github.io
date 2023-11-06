@@ -62,7 +62,7 @@ ENV MKL_THREADING_LAYER=GNU
 # t=ultralytics/ultralytics:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus '"device=2,3"' $t
 
 # Pull and Run with local directory access
-# t=ultralytics/ultralytics:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all -v "$(pwd)"/datasets:/usr/src/datasets $t
+# t=ultralytics/ultralytics:latest && sudo docker pull $t && sudo docker run -it --ipc=host --gpus all -v "$(pwd)"/dataset:/usr/src/dataset $t
 
 # Kill all
 # sudo docker kill $(sudo docker ps -q)

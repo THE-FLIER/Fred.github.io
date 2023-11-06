@@ -6,7 +6,7 @@ mode: train  # (str) YOLO mode, i.e. train, val, predict, export, track, benchma
 
 # Train settings -------------------------------------------------------------------------------------------------------
 model: ./models/yolov8x-pose-p6.pt # (str, optional) path to model file, i.e. yolov8n.pt, yolov8n.yaml
-data: ./ultralytics/cfg/datasets/bookshelf-point.yaml  # (str, optional) path to data file, i.e. coco128.yaml
+data: ./ultralytics/cfg/dataset/bookshelf-point.yaml  # (str, optional) path to data file, i.e. coco128.yaml
 epochs: 600  # (int) number of epochs to train for
 patience: 50  # (int) epochs to wait for no observable improvement for early stopping of training
 batch: -1  # (int) number of images per batch (-1 for AutoBatch)

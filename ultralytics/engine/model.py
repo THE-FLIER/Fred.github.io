@@ -291,7 +291,7 @@ class Model:
         args = {**DEFAULT_CFG_DICT, **self.model.args, **custom, **kwargs, 'mode': 'benchmark'}
         return benchmark(
             model=self,
-            data=kwargs.get('data'),  # if no 'data' argument passed set data=None for default datasets
+            data=kwargs.get('data'),  # if no 'data' argument passed set data=None for default dataset
             imgsz=args['imgsz'],
             half=args['half'],
             int8=args['int8'],

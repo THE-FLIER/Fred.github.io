@@ -135,8 +135,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# datasets and projects
-datasets/
+# dataset and projects
 runs/
 wandb/
 tests/
@@ -174,3 +173,4 @@ README.md
 to_coco.py
 name_trans.py
 app_results/
+dataset/

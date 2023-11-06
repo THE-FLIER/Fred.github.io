@@ -103,7 +103,7 @@ def polygons_to_mask2(img_shape, polygons):
     return mask
 
 if __name__=="__main__":
-    source_folder = "./datasets/bookshelf/images/val/"#
+    source_folder = "./dataset/bookshelf/images/val/"#
     target_folder = "./results/"
     model = YOLO("models/bookshelf-best.pt")
 

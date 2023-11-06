@@ -3,7 +3,7 @@ from ultralytics import YOLO
 import os
 import cv2
 import numpy as np
-input = 'datasets/bookshelf-point(4)/images/val'
+input = 'dataset/bookshelf-point(4)/images/val'
 
 output = 'results/point1/'
 

@@ -39,7 +39,7 @@ sudo docker run --ipc=host -it ultralytics/yolov5:latest
 To run a container with access to local files (e.g., COCO training data in `/datasets`), use the `-v` flag:
 
 ```bash
-sudo docker run --ipc=host -it -v "$(pwd)"/datasets:/usr/src/datasets ultralytics/yolov5:latest
+sudo docker run --ipc=host -it -v "$(pwd)"/dataset:/usr/src/dataset ultralytics/yolov5:latest
 ```
 
 ### Container with GPU access:

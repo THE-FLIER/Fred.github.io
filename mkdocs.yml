@@ -174,44 +174,44 @@ nav:
       - YOLO-NAS (Neural Architecture Search): models/yolo-nas.md
       - RT-DETR (Realtime Detection Transformer): models/rtdetr.md
   - Datasets:
-      - datasets/index.md
+      - dataset/index.md
       - Detection:
-          - datasets/detect/index.md
-          - Argoverse: datasets/detect/argoverse.md
-          - COCO: datasets/detect/coco.md
-          - COCO8: datasets/detect/coco8.md
-          - GlobalWheat2020: datasets/detect/globalwheat2020.md
-          - Objects365: datasets/detect/objects365.md
-          - OpenImagesV7: datasets/detect/open-images-v7.md
-          - SKU-110K: datasets/detect/sku-110k.md
-          - VisDrone: datasets/detect/visdrone.md
-          - VOC: datasets/detect/voc.md
-          - xView: datasets/detect/xview.md
+          - dataset/detect/index.md
+          - Argoverse: dataset/detect/argoverse.md
+          - COCO: dataset/detect/coco.md
+          - COCO8: dataset/detect/coco8.md
+          - GlobalWheat2020: dataset/detect/globalwheat2020.md
+          - Objects365: dataset/detect/objects365.md
+          - OpenImagesV7: dataset/detect/open-images-v7.md
+          - SKU-110K: dataset/detect/sku-110k.md
+          - VisDrone: dataset/detect/visdrone.md
+          - VOC: dataset/detect/voc.md
+          - xView: dataset/detect/xview.md
       - Segmentation:
-          - datasets/segment/index.md
-          - COCO: datasets/segment/coco.md
-          - COCO8-seg: datasets/segment/coco8-seg.md
+          - dataset/segment/index.md
+          - COCO: dataset/segment/coco.md
+          - COCO8-seg: dataset/segment/coco8-seg.md
       - Pose:
-          - datasets/pose/index.md
-          - COCO: datasets/pose/coco.md
-          - COCO8-pose: datasets/pose/coco8-pose.md
+          - dataset/pose/index.md
+          - COCO: dataset/pose/coco.md
+          - COCO8-pose: dataset/pose/coco8-pose.md
       - Classification:
-          - datasets/classify/index.md
-          - Caltech 101: datasets/classify/caltech101.md
-          - Caltech 256: datasets/classify/caltech256.md
-          - CIFAR-10: datasets/classify/cifar10.md
-          - CIFAR-100: datasets/classify/cifar100.md
-          - Fashion-MNIST: datasets/classify/fashion-mnist.md
-          - ImageNet: datasets/classify/imagenet.md
-          - ImageNet-10: datasets/classify/imagenet10.md
-          - Imagenette: datasets/classify/imagenette.md
-          - Imagewoof: datasets/classify/imagewoof.md
-          - MNIST: datasets/classify/mnist.md
+          - dataset/classify/index.md
+          - Caltech 101: dataset/classify/caltech101.md
+          - Caltech 256: dataset/classify/caltech256.md
+          - CIFAR-10: dataset/classify/cifar10.md
+          - CIFAR-100: dataset/classify/cifar100.md
+          - Fashion-MNIST: dataset/classify/fashion-mnist.md
+          - ImageNet: dataset/classify/imagenet.md
+          - ImageNet-10: dataset/classify/imagenet10.md
+          - Imagenette: dataset/classify/imagenette.md
+          - Imagewoof: dataset/classify/imagewoof.md
+          - MNIST: dataset/classify/mnist.md
       - Oriented Bounding Boxes (OBB):
-          - datasets/obb/index.md
-          - DOTAv2: datasets/obb/dota-v2.md
+          - dataset/obb/index.md
+          - DOTAv2: dataset/obb/dota-v2.md
       - Multi-Object Tracking:
-          - datasets/track/index.md
+          - dataset/track/index.md
   - Guides:
       - guides/index.md
       - K-Fold Cross Validation: guides/kfold-cross-validation.md
@@ -253,7 +253,7 @@ nav:
   - Ultralytics HUB:
       - hub/index.md
       - Quickstart: hub/quickstart.md
-      - Datasets: hub/datasets.md
+      - Datasets: hub/dataset.md
       - Projects: hub/projects.md
       - Models: hub/models.md
       - Integrations: hub/integrations.md

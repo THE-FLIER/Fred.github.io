@@ -1,6 +1,6 @@
 ---
 comments: true
-description: Learn how to train datasets on single or multiple GPUs using YOLOv5. Includes setup, training modes and result profiling for efficient leveraging of multiple GPUs.
+description: Learn how to train dataset on single or multiple GPUs using YOLOv5. Includes setup, training modes and result profiling for efficient leveraging of multiple GPUs.
 keywords: YOLOv5, multi-GPU Training, YOLOv5 training, deep learning, machine learning, object detection, Ultralytics
 ---
 

@@ -341,7 +341,7 @@ class RTDETRDecoder(nn.Module):
     def _reset_parameters(self):
         # class and bbox head init
         bias_cls = bias_init_with_prob(0.01) / 80 * self.nc
-        # NOTE: the weight initialization in `linear_init_` would cause NaN when training with custom datasets.
+        # NOTE: the weight initialization in `linear_init_` would cause NaN when training with custom dataset.
         # linear_init_(self.enc_score_head)
         constant_(self.enc_score_head.bias, bias_cls)
         constant_(self.enc_bbox_head.layers[-1].weight, 0.)
