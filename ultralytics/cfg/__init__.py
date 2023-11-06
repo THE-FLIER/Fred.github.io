@@ -19,7 +19,7 @@ TASKS = 'detect', 'segment', 'classify', 'pose'
 TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'bookshelf-seg.yaml', 'classify': 'imagenet100', 'pose': 'bookshelf-point.yaml'}
 TASK2MODEL = {
     'detect': 'yolov8n.pt',
-    'segment': 'yolov8l-seg.pt',
+    'segment': 'yolov8m-seg.pt',
     'classify': 'yolov8n-cls.pt',
     'pose': 'yolov8x-pose-p6.pt'}
 TASK2METRIC = {
