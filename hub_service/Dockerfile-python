@@ -26,7 +26,9 @@ RUN pip install -r /ultralytics/requirements_docker.txt -i https://pypi.tuna.tsi
 #Make Dir For Models
 RUN mkdir -p /ultralytics/models/
 ADD best_new.pt /ultralytics/models/
+ADD best_point.pt /ultralytics/models/
 ADD app_request.py /ultralytics/
+ADD app_request_shelf.py /ultralytics/
 
 #Service Active
 EXPOSE 5001
