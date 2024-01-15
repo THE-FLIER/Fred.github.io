@@ -50,7 +50,7 @@ def predict(image,parament):
     dir = make_file(img)
     print(parament)
     with torch.no_grad():
-            result = model.predict(img, conf=float(parament['conf']), imgsz=640 ,save_txt=False, save_crop=True, boxes=False, device='0')
+            result = model.predict(img, conf=float(parament['conf']), imgsz=640 ,save_txt=False, save_crop=False, boxes=False, device='0')
 
             masks = result[0].masks  # Masks object for segmentation masks outputs
             if masks is not None:
@@ -87,7 +87,7 @@ def predict(image,parament):
                     # 从排序后的列表中提取图像，并将它们添加到新的列表中
                     list1 = [item[1] for item in sorted_items]
                     # 保存到本地
-                    save_results(list1, dir)
+                save_results(list1, dir)
             else:
                 list1 = 'NONE'
 

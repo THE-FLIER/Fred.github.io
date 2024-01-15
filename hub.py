@@ -11,16 +11,25 @@ import pickle
 def base64_to_pil(image):
     img = Image.open(io.BytesIO(base64.b64decode(image)))
     return img
-#请求
 
-#返回数据处理
+def is_asc(asc):
+    try:
+        asc.isascii()
+        return True
+    except AttributeError:
+        return False
+
+#
 def get_crop(output):
     img_list = []
     if 'NONE' not in output:
         for i in output:
-            outputs = base64_to_pil(i)
-            outputs = np.asarray(outputs)
-            img_list.append(outputs)
+            if is_asc(i):
+                outputs = base64_to_pil(i)
+                outputs = np.asarray(outputs)
+                img_list.append(outputs)
+            else:
+                img_list = output
     else:
         img_list = False
 
@@ -30,15 +39,18 @@ def get_crop(output):
 def run(args):
     save_path = args.infer_results
     images = args.image_path
-    confidence = args.conf
-    parament = {'conf': confidence}
     os.makedirs(save_path, exist_ok=True)
     for i in os.listdir(images):
         if i.endswith('.jpg') or i.endswith('.png') :
+            #参数
+            confidence = args.conf
+            coordinate = None
+            parament = {'conf': confidence, 'coordinate': coordinate}
             img_path = os.path.join(images, i)
             name, ext = os.path.splitext(os.path.basename(img_path))
             pre_out = pre(img_path, parament)
             crops = get_crop(pre_out)
+
             index = 1
             if crops:
                 for i in crops:
@@ -48,7 +60,6 @@ def run(args):
                     index += 1
             else:
                 print(f'Images predict:{crops}')
-
 
 def pre(img, paraments):
     parament_binary = pickle.dumps(paraments)
@@ -62,13 +73,13 @@ def pre(img, paraments):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Hyperparams")
     parser.add_argument(
-        "--image_path", type=str, default="test_pics/1/2/", help="Path Of Image To Infer"
+        "--image_path", type=str, default="test_pics/1/shelf", help="Path Of Image To Infer"
     )
     parser.add_argument(
         "--infer_results", type=str, default="test_pics/crops/", help="Path Of Infer_Crops To Save"
     )
     parser.add_argument(
-        "--conf", type=str, default='0.7', help="Confidence Of Predict"
+        "--conf", type=str, default='0.5', help="Confidence Of Predict"
     )
     args = parser.parse_args()
     run(args)

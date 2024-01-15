@@ -150,6 +150,6 @@ def get_prediction():
 # host = os.environ.get('APP_HOST')
 # port = os.environ.get('APP_PORT')
 host = "0.0.0.0"
-port = "5000"
+port = "5002"
 
 app.run(host=host, port=port, debug=False)

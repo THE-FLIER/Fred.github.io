@@ -10,7 +10,7 @@ from ultralytics.utils.tal import TaskAlignedAssigner, dist2bbox, make_anchors
 
 from .metrics import bbox_iou
 from .tal import bbox2dist
-
+from .obb_loss import ComputeLoss
 
 class VarifocalLoss(nn.Module):
     """Varifocal loss by Zhang et al. https://arxiv.org/abs/2008.13367."""

@@ -1,0 +1,46 @@
+FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
+RUN pip install --no-cache nvidia-tensorrt --index-url https://pypi.ngc.nvidia.com
+RUN apt-get update
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+
+#YoloV8 based on Python3.8
+RUN pip install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# Downloads to user config dir
+ADD Arial.ttf Arial.Unicode.ttf /root/.config/Ultralytics/
+
+
+#WorkDir
+WORKDIR /ultralytics
+
+# Copy contents
+# COPY . /usr/src/app  (issues as not a .git directory)
+RUN apt-get update && apt-get install -y git
+
+#RUN git clone http://172.16.1.144/Fred/yolov8.git /ultralytics
+ADD /yolov8 /ultralytics/
+#Requirements
+ADD requirements_docker.txt /ultralytics/
+RUN pip install -r /ultralytics/requirements_docker.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+#Make Dir For Models
+RUN mkdir -p /ultralytics/models/
+ADD book_detect_point.pt /ultralytics/models/
+ADD book_shelf_point.pt /ultralytics/models/
+ADD book_best_one.pt /ultralytics/models/
+ADD app_request_book.py /ultralytics/
+ADD app_request_shelf.py /ultralytics/
+
+EXPOSE 5004
+#Service Active
+#CMD ["python","app_request_book.py"]
+#CMD ["python","app_request_shelf.py"]
+
+
+
+
+
+
+
+
+

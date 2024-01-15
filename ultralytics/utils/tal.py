@@ -5,8 +5,45 @@ import torch.nn as nn
 
 from .checks import check_version
 from .metrics import bbox_iou
-
+from .rbox_utils import rbox2poly2
 TORCH_1_10 = check_version(torch.__version__, '1.10.0')
+
+
+def check_points_in_rotated_boxes(points, boxes):
+    """Check whether point is in rotated boxes
+
+    Args:
+        points (tensor): (1, L, 2) anchor points
+        boxes (tensor): [B, N, 5] gt_bboxes
+        eps (float): default 1e-9
+
+    Returns:
+        is_in_box (tensor): (B, N, L)
+
+    """
+    # [B, N, 5] -> [B, N, 4, 2]
+
+    corners = rbox2poly2(boxes)
+    # [1, L, 2] -> [1, 1, L, 2]
+    points = points.unsqueeze(0)
+    # [B, N, 4, 2] -> [B, N, 1, 2]
+    a, b, c, d = corners.split((1, 1, 1, 1), 2)
+    ab = b - a
+    ad = d - a
+    # [B, N, L, 2]
+    ap = points - a
+    # [B, N, L]
+    norm_ab = torch.sum(ab * ab, dim=-1)
+    # [B, N, L]
+    norm_ad = torch.sum(ad * ad, dim=-1)
+    # [B, N, L] dot product
+    ap_dot_ab = torch.sum(ap * ab, dim=-1)
+    # [B, N, L] dot product
+    ap_dot_ad = torch.sum(ap * ad, dim=-1)
+    # [B, N, L] <A, B> = |A|*|B|*cos(theta)
+    is_in_box = (ap_dot_ab >= 0) & (ap_dot_ab <= norm_ab) & (ap_dot_ad >= 0) & (
+            ap_dot_ad <= norm_ad)
+    return is_in_box
 
 
 def select_candidates_in_gts(xy_centers, gt_bboxes, eps=1e-9):
