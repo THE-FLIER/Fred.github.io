@@ -11,7 +11,7 @@ import torch.nn as nn
 from torch.nn import init
 
 __all__ = ('Conv', 'Conv2', 'LightConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus', 'GhostConv',
-           'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'RepConv', 'GAM_Attention', "ResBlock_CBAM", "PolarizedSelfAttention")
+           'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'RepConv', 'GAM_Attention', "ResBlock_CBAM", "PSA")
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
@@ -366,46 +366,53 @@ class ResBlock_CBAM(nn.Module):
         out = self.relu(out)
         return out
 
-class PolarizedSelfAttention(nn.Module):
-
-    def __init__(self, channel=512):
+class PSA_Channel(nn.Module):
+    def __init__(self, c1) -> None:
         super().__init__()
-        self.ch_wv=nn.Conv2d(channel,channel//2,kernel_size=(1,1))
-        self.ch_wq=nn.Conv2d(channel,1,kernel_size=(1,1))
-        self.softmax_channel=nn.Softmax(1)
-        self.softmax_spatial=nn.Softmax(-1)
-        self.ch_wz=nn.Conv2d(channel//2,channel,kernel_size=(1,1))
-        self.ln=nn.LayerNorm(channel)
-        self.sigmoid=nn.Sigmoid()
-        self.sp_wv=nn.Conv2d(channel,channel//2,kernel_size=(1,1))
-        self.sp_wq=nn.Conv2d(channel,channel//2,kernel_size=(1,1))
-        self.agp=nn.AdaptiveAvgPool2d((1,1))
+        c_ = c1 // 2  # hidden channels
+        self.cv1 = nn.Conv2d(c1, c_, 1)
+        self.cv2 = nn.Conv2d(c1, 1, 1)
+        self.cv3 = nn.Conv2d(c_, c1, 1)
+        self.reshape1 = nn.Flatten(start_dim=-2, end_dim=-1)
+        self.reshape2 = nn.Flatten()
+        self.sigmoid = nn.Sigmoid()
+        self.softmax = nn.Softmax(1)
+        self.layernorm = nn.LayerNorm([c1, 1, 1])
+
+    def forward(self, x): # shape(batch, channel, height, width)
+        x1 = self.reshape1(self.cv1(x)) # shape(batch, channel/2, height*width)
+        x2 = self.softmax(self.reshape2(self.cv2(x))) # shape(batch, height*width)
+        y = torch.matmul(x1, x2.unsqueeze(-1)).unsqueeze(-1) # 高维度下的矩阵乘法（最后两个维度相乘）
+        return self.sigmoid(self.layernorm(self.cv3(y))) * x
+
+class PSA_Spatial(nn.Module):
+    def __init__(self, c1) -> None:
+        super().__init__()
+        c_ = c1 // 2  # hidden channels
+        self.cv1 = nn.Conv2d(c1, c_, 1)
+        self.cv2 = nn.Conv2d(c1, c_, 1)
+        self.reshape1 = nn.Flatten(start_dim=-2, end_dim=-1)
+        self.globalPooling = nn.AdaptiveAvgPool2d(1)
+        self.softmax = nn.Softmax(1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x): # shape(batch, channel, height, width)
+        x1 = self.reshape1(self.cv1(x)) # shape(batch, channel/2, height*width)
+        x2 = self.softmax(self.globalPooling(self.cv2(x)).squeeze(-1)) # shape(batch, channel/2, 1)
+        y = torch.bmm(x2.permute(0,2,1), x1) # shape(batch, 1, height*width)
+        return self.sigmoid(y.view(x.shape[0], 1, x.shape[2], x.shape[3])) * x
+
+class PSA(nn.Module):
+    def __init__(self, in_channel, parallel=True) -> None:
+        super().__init__()
+        self.parallel = parallel
+        self.channel = PSA_Channel(in_channel)
+        self.spatial = PSA_Spatial(in_channel)
 
     def forward(self, x):
-        b, c, h, w = x.size()
-
-        #Channel-only Self-Attention
-        channel_wv=self.ch_wv(x) #bs,c//2,h,w
-        channel_wq=self.ch_wq(x) #bs,1,h,w
-        channel_wv=channel_wv.reshape(b,c//2,-1) #bs,c//2,h*w
-        channel_wq=channel_wq.reshape(b,-1,1) #bs,h*w,1
-        channel_wq=self.softmax_channel(channel_wq)
-        channel_wz=torch.matmul(channel_wv,channel_wq).unsqueeze(-1) #bs,c//2,1,1
-        channel_weight=self.sigmoid(self.ln(self.ch_wz(channel_wz).reshape(b,c,1).permute(0,2,1))).permute(0,2,1).reshape(b,c,1,1) #bs,c,1,1
-        channel_out=channel_weight*x
-
-        #Spatial-only Self-Attention
-        spatial_wv=self.sp_wv(x) #bs,c//2,h,w
-        spatial_wq=self.sp_wq(x) #bs,c//2,h,w
-        spatial_wq=self.agp(spatial_wq) #bs,c//2,1,1
-        spatial_wv=spatial_wv.reshape(b,c//2,-1) #bs,c//2,h*w
-        spatial_wq=spatial_wq.permute(0,2,3,1).reshape(b,1,c//2) #bs,1,c//2
-        spatial_wq=self.softmax_spatial(spatial_wq)
-        spatial_wz=torch.matmul(spatial_wq,spatial_wv) #bs,1,h*w
-        spatial_weight=self.sigmoid(spatial_wz.reshape(b,1,h,w)) #bs,1,h,w
-        spatial_out=spatial_weight*x
-        out=spatial_out+channel_out
-        return out
+        if(self.parallel):
+            return self.channel(x) + self.spatial(x)
+        return self.spatial(self.channel(x))
 
 class Concat(nn.Module):
     """Concatenate a list of tensors along dimension."""

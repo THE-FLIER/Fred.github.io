@@ -6,13 +6,13 @@ import numpy as np
 import json
 from sklearn.metrics.pairwise import euclidean_distances
 
-input = '/home/zf/yolov8/dataset/rectangle_img'
+input = 'dataset/50_mp_4exhibit/images/train'
 
 #
-output = 'results/book_test_4_points_refined_lishui'
+output = 'results/books_test_company_shelves_13_points'
 
 # Load a pretrained YOLOv8n model
-model = YOLO('/home/zf/yolov8/runs/pose/1_10_books_13_points_ascend2/weights/best.pt')
+model = YOLO('/home/zf/yolov8/runs/pose/1_10_books_13_points_ascend2/weights/book_best_one.pt')
 
 def polygons_to_mask2(img_shape, polygons):
     '''
@@ -146,12 +146,12 @@ for file_name in os.listdir(input):
     dir_list = [output, f"{output}/full", f"{output}/full_ori",f'{output}/visual/']
     for i in dir_list:
         os.makedirs(i, exist_ok=True)
-    if file_name.endswith('.png') or file_name.endswith('.jpg'):
+    if file_name.endswith('.png') or file_name.endswith('.jpg') or file_name.endswith('.jpeg'):
         # Run inference on 'bus.jpg'
         source_path = os.path.join(input, file_name)
         ori_img = cv2.imread(source_path)
         h, w, _ = ori_img.shape
-        results = model(source_path, conf=0.65, imgsz=640, save_txt=False, save_crop=False, boxes=False, device='0')  # results list
+        results = model(source_path, conf=0.6, imgsz=640, save_txt=False, save_crop=False, boxes=False, device='0')  # results list
         a = file_name[:-4]
         filename = f'{a}.json'
         save = f'{output}/crop/{a}'

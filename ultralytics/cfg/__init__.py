@@ -16,7 +16,7 @@ from ultralytics.utils import (ASSETS, DEFAULT_CFG, DEFAULT_CFG_DICT, DEFAULT_CF
 MODES = 'train', 'val', 'predict', 'export', 'track', 'benchmark'
 TASKS = 'detect', 'segment', 'classify', 'pose'
 #TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'coco8-seg.yaml', 'classify': 'imagenet100', 'pose': 'coco8-pose.yaml'}
-TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'book-seg.yaml', 'classify': 'imagenet100', 'pose': 'bookshelf-point.yaml'}
+TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'book-seg.yaml', 'classify': 'imagenet100', 'pose': 'book-multi_point.yaml'}
 TASK2MODEL = {
     'detect': 'yolov8n.pt',
     'segment': 'yolov8m-seg.pt',
