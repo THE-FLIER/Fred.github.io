@@ -9,7 +9,7 @@ def dataset_split(src_folder,dst_folder,src_label_folder,dst_label_folder):
     all_files = os.listdir(src_folder)
 
     # 随机选择25%的文件作为验证集
-    val_files = np.random.choice(all_files, size=int(0.2 * len(all_files)), replace=False)
+    val_files = np.random.choice(all_files, size=int(0.1 * len(all_files)), replace=False)
 
     # 将选中的文件和对应的标签移动到目标文件夹
     for file in val_files:

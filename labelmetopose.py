@@ -338,8 +338,8 @@ def init_dir(base_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--class_name",default='book', help="class name", type=str)
-    parser.add_argument("--input", default='dataset/coco_500_extract',help="json file path (labelme)", type=str)
-    parser.add_argument("--output",default='dataset/coco/coco_700_extracted_fourpoints', help="output file path (coco format)", type=str)
+    parser.add_argument("--input", default='dataset/coco_500_extract-240109',help="json file path (labelme)", type=str)
+    parser.add_argument("--output",default='dataset/coco/coco_500_extracted_122', help="output file path (coco format)", type=str)
     parser.add_argument("--join_num", help="number of join", type=int, default=1)
     parser.add_argument("--ratio", help="train and test split ratio", type=float, default=0.2)
     args = parser.parse_args()

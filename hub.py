@@ -64,7 +64,7 @@ def run(args):
 def pre(img, paraments):
     parament_binary = pickle.dumps(paraments)
     files = {'file': open(img, 'rb').read(), 'parament': parament_binary}
-    url = 'http://172.16.1.152:5000/predict'
+    url = 'http://172.16.0.145:8100/predict'
     response = requests.post(url, files=files)
     output = response.json()["content"]
 
@@ -73,10 +73,10 @@ def pre(img, paraments):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Hyperparams")
     parser.add_argument(
-        "--image_path", type=str, default="test_pics/1/shelf", help="Path Of Image To Infer"
+        "--image_path", type=str, default="/home/zf/yolov8/dataset/book_test", help="Path Of Image To Infer"
     )
     parser.add_argument(
-        "--infer_results", type=str, default="test_pics/crops/", help="Path Of Infer_Crops To Save"
+        "--infer_results", type=str, default="results/test_pics/crops/", help="Path Of Infer_Crops To Save"
     )
     parser.add_argument(
         "--conf", type=str, default='0.5', help="Confidence Of Predict"

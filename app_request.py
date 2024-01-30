@@ -17,7 +17,7 @@ app = Flask(__name__)
 import json
 # 模型加载
 
-model = "models/best_new.pt"
+model = "models/best.pt"
 model = YOLO(model)
 
 #unique signal
@@ -37,62 +37,119 @@ def polygons_to_mask2(img_shape, polygons):
     '''
     mask = np.zeros(img_shape, dtype=np.uint8)
     polygons = np.asarray(polygons, np.int32) # 这里必须是int32，其他类型使用fillPoly会报错
-    # cv2.fillPoly(mask, polygons, 1) # 非int32 会报错
-    cv2.fillConvexPoly(mask, polygons, 1)  # 非int32 会报错
+    cv2.fillPoly(mask, [polygons], 1) # 非int32 会报错
+    # cv2.fillConvexPoly(mask, polygons, 1)  # 非int32 会报错
     return mask
+
+def crop_rec(book_dst, img_per_):
+
+    # crop rectification
+    # 切出
+    mask = np.zeros_like(img_per_)
+    # 将四点构成的区域填充为白色
+    cv2.fillConvexPoly(mask, np.array(np.int32(book_dst)), (255, 255, 255))
+
+    # 使用掩码裁剪
+    cropped = cv2.bitwise_and(img_per_, mask)
+
+    x1 = int(min(p[0] for p in book_dst))
+    y1 = int(min(p[1] for p in book_dst))
+    x2 = int(max(p[0] for p in book_dst))
+    y2 = int(max(p[1] for p in book_dst))
+
+    cropped1 = cropped[y1:y2, x1:x2]
+
+    return cropped1
+
+def filter_boxes(boxes: np.ndarray, keypoints, threshold=0.5):
+    A = boxes.shape[0]
+    keep = np.ones(A, dtype=bool)
+    for i in range(A):
+        if not keep[i]:
+            continue
+        for j in range(i+1, A):
+            if not keep[j]:
+                continue
+            xy_max = np.minimum(boxes[i, 2:], boxes[j, 2:])
+            xy_min = np.maximum(boxes[i, :2], boxes[j, :2])
+
+            # 计算交集面积
+            inter = np.clip(xy_max-xy_min, a_min=0, a_max=np.inf)
+            inter = inter[0]*inter[1]
+
+            # 计算每个矩阵的面积
+            area_i = (boxes[i, 2]-boxes[i, 0])*(boxes[i, 3] - boxes[i, 1])
+            area_j = (boxes[j, 2]-boxes[j, 0])*(boxes[j, 3] - boxes[j, 1])
+
+            # 计算交并比
+            iou = inter/(area_i+area_j-inter)
+
+            # 如果交并比大于0.5，删除面积较小的边界框
+            if iou > threshold:
+                if area_i < area_j:
+                    keep[i] = False
+                    break
+                else:
+                    keep[j] = False
+
+    return keypoints[keep]
+
+#获取最大外接矩形
+def max_area_rect(keypoints):
+    rects = []
+    for quad in keypoints:
+        quad = np.array(quad)
+        x_min, y_min = np.min(quad, axis=0)
+        x_max, y_max = np.max(quad, axis=0)
+        rects.append([x_min, y_min, x_max, y_max])
+    return np.array(rects)
+
+#* width height
+def scale_coordinates(keypoints, width, height):
+    scaled_keypoints = []
+    for quad in keypoints:
+        scaled_quad = []
+        for point in quad:
+            x, y = point
+            scaled_quad.append([x * width, y * height])
+        scaled_keypoints.append(scaled_quad)
+    return np.array(scaled_keypoints)
+
+def sort_keypoints(keypoints):
+    # 对每个四边形，取其所有点的x坐标的平均值作为排序依据
+    sorted_keypoints = sorted(keypoints, key=lambda quad: np.mean([point[0] for point in quad]))
+    return np.array(sorted_keypoints)
 
 # 预测
 def predict(image,parament):
     # 预处理图片
     img = preprocess(image)
     img = np.asarray(img)
-    h,w, _ =img.shape
-    dir = make_file(img)
+    h, w, _ =img.shape
+    #dir = make_file(img)
     print(parament)
     with torch.no_grad():
-            result = model.predict(img, conf=float(parament['conf']), imgsz=640 ,save_txt=False, save_crop=False, boxes=False, device='0')
+            result = model.predict(img, conf=float(parament['conf']), imgsz=640 ,iou=0.45, save_txt=False, save_crop=True, boxes=False, device='0')
+            for r in result:
+                keypoints = r.keypoints.xyn.cpu().numpy()
+                list1 = []
+                if np.size(keypoints) !=0:
+                    keypoints = sort_keypoints(keypoints)
+                    #scale expand
+                    scaled_keypoints = scale_coordinates(keypoints, w, h)
+                    for points in scaled_keypoints:
+                        if len(points) != 0:
+                            points = points[0:4]
+                            cropped1 = crop_rec(points, img)
 
-            masks = result[0].masks  # Masks object for segmentation masks outputs
-            if masks is not None:
-                coordinates = masks.xyn
-                dict1 = {}
-                for i in coordinates:
-                    # mask位置
-                    i[:, 0] = i[:, 0] * w
-                    i[:, 1] = i[:, 1] * h
-                    mask = polygons_to_mask2([h, w], i)
-                    mask = mask.astype(np.uint8)
+                            # 从排序后的列表中提取图像，并将它们添加到新的列表中
+                            list1.append(cropped1)
+                else:
+                        list1 = 'NONE'
 
-                    # mask所在坐标矩形框
-                    x = i[:, 0]
-                    y = i[:, 1]
-                    y1 = int(min(y))
-                    y2 = int(max(y))
-                    x1 = int(min(x))
-                    x2 = int(max(x))
-
-                    # 创建与原图大小全黑图，用于提取.
-                    res = np.zeros_like(img)
-                    # 提取>0部分到新图并进行裁剪
-                    res[mask > 0] = img[mask > 0]
-
-                    # 裁剪后的图
-                    masked = res[y1:y2, x1:x2]
-
-                    # 将裁剪后的图像添加到字典中，键为左上角坐标
-                    dict1[(x1, y1)] = masked
-                    # 按照键（即左上角坐标）对字典进行排序
-                    sorted_items = sorted(dict1.items())
-
-                    # 从排序后的列表中提取图像，并将它们添加到新的列表中
-                    list1 = [item[1] for item in sorted_items]
-                    # 保存到本地
-                save_results(list1, dir)
-            else:
-                list1 = 'NONE'
-
+            # 保存到本地
+            # save_results(list1, dir)
             return list1
-
 
 # 预处理
 def preprocess(image):
@@ -113,7 +170,7 @@ def transform(outputs):
             image_list.append(img_str)
 
     else:
-        image_list = outputs
+        image_list = None
 
     return image_list
 
@@ -151,8 +208,7 @@ def get_prediction():
 
     return jsonify({'content': result})
 
-if __name__ == '__main__':
-    # host = os.environ.get('APP_HOST')
-    # port = os.environ.get('APP_PORT')
+host = '0.0.0.0'
+port = 8100
 
-    app.run(host='172.16.1.152', port=5000, debug=True)
+app.run(host=host, port=port, debug=False)

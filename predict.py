@@ -6,13 +6,14 @@ import numpy as np
 import json
 from sklearn.metrics.pairwise import euclidean_distances
 
-input = 'dataset/50_mp_4exhibit/images/train'
+input = 'dataset/rectangle_img'
 
 #
-output = 'results/books_test_company_shelves_13_points'
+output = 'results/1_26/lishui_crop'
 
 # Load a pretrained YOLOv8n model
-model = YOLO('/home/zf/yolov8/runs/pose/1_10_books_13_points_ascend2/weights/book_best_one.pt')
+model = YOLO('/home/zf/yolov8/runs/pose/1_23_boos_13_points_addition2/weights/best.pt')
+conf = 0.59
 
 def polygons_to_mask2(img_shape, polygons):
     '''
@@ -27,7 +28,6 @@ def polygons_to_mask2(img_shape, polygons):
     cv2.fillConvexPoly(mask, polygons, 1)  # 非int32 会报错
 
     return mask
-
 
 def filter_boxes(boxes: np.ndarray, keypoints, threshold=0.5):
     A = boxes.shape[0]
@@ -143,7 +143,7 @@ def crop_rec(book_dst, img_per_):
     return cropped1
 
 for file_name in os.listdir(input):
-    dir_list = [output, f"{output}/full", f"{output}/full_ori",f'{output}/visual/']
+    dir_list = [output,  f"{output}/full_ori",f'{output}/visual/']
     for i in dir_list:
         os.makedirs(i, exist_ok=True)
     if file_name.endswith('.png') or file_name.endswith('.jpg') or file_name.endswith('.jpeg'):
@@ -151,7 +151,7 @@ for file_name in os.listdir(input):
         source_path = os.path.join(input, file_name)
         ori_img = cv2.imread(source_path)
         h, w, _ = ori_img.shape
-        results = model(source_path, conf=0.6, imgsz=640, save_txt=False, save_crop=False, boxes=False, device='0')  # results list
+        results = model.predict(source_path, conf=conf, imgsz=640, save_txt=False, save_crop=False, boxes=False, device='0')  # results list
         a = file_name[:-4]
         filename = f'{a}.json'
         save = f'{output}/crop/{a}'
@@ -203,7 +203,7 @@ for file_name in os.listdir(input):
                 #
                 # write_to_json(input, filename, data)
 
-                cv2.imwrite(f"{output}/full/{a}.jpg", black_img * 255)
+                #cv2.imwrite(f"{output}/full/{a}.jpg", black_img * 255)
                 cv2.imwrite(f"{output}/full_ori/{a}_ori.jpg", res)
                 # cv2.imwrite(f"{output}/{a}_ori.jpg", ori_img_)
 

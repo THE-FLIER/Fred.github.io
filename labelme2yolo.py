@@ -89,6 +89,12 @@ def calculate_shelves_points_13(np_points):
 
     return np.array([A, B, C, D, E, F, G, H,J, K, L, M, I])
 
+def obb(np_points):
+    A, B, C, D = np_points[0], np_points[1], np_points[2], np_points[3]
+
+    return np.array([A, B, C, D])
+
+
 def dist(p1, p2):
     return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
@@ -113,6 +119,7 @@ def sorted(np_points,width, height):
 
 
     return np.array(sorted_points, np.float32)
+
 
 def BOOK_order_points_with_vitrual_center(pts, width, height):
     pts = np.array(pts, dtype="float32")
@@ -161,12 +168,12 @@ def SHELVES_order_points_with_vitrual_center(pts, width, height):
 def make_points(np_points,np_w_h):
     width, height = np_w_h[0][0],np_w_h[0][1]
     #BOOK
-    # np_points = BOOK_order_points_with_vitrual_center(np_points, width, height)
+    np_points = BOOK_order_points_with_vitrual_center(np_points, width, height)
 
     # SHELVES
-    np_points = SHELVES_order_points_with_vitrual_center(np_points, width, height)
+    #np_points = SHELVES_order_points_with_vitrual_center(np_points, width, height)
 
-    elven_points = calculate_shelves_points_13(np_points)
+    elven_points = calculate_points_13(np_points)
     elven_points = elven_points / np_w_h
     elven_points = elven_points.tolist()
 
@@ -219,12 +226,27 @@ def lambelme_json_label_to_yolov_seg_label(json_path,txt_save):
                 center_x = ((min_x + max_x) / 2) / float(width)
                 center_y = ((min_y + max_y) / 2) / float(height)
 
+
                 norm_points_list= make_points(np_points,np_w_h)
+
                 txt_con = ""
                 txt_con += f'0 {center_x} {center_y} {width_} {height_} '
                 txt_content = f"{txt_con}" + " ".join(
                     [" ".join([str(cell[0]), str(cell[1])]) for cell in norm_points_list]) + "\n"
+
+                #norm_points_list = [[center_x, center_y], [width_, height_]]
+                # txt_content = f"0 " + " ".join(
+                #     [" ".join([str(cell[0]), str(cell[1])]) for cell in norm_points_list]) + "\n"
+                #
                 f.write(txt_content)
+
+
+
+                #obb
+                # norm_points_list = make_points(np_points, np_w_h)
+                # txt_content = f"0 " + " ".join(
+                #     [" ".join([str(cell[0]), str(cell[1])]) for cell in norm_points_list]) + "\n"
+                # f.write(txt_content)
 
         #         for i, point in enumerate(norm_points_list):
         #             cv2.circle(img, np.int32(point), 2, (255, 155, 255), 4)
@@ -233,22 +255,23 @@ def lambelme_json_label_to_yolov_seg_label(json_path,txt_save):
         # cv2.imwrite(f'dataset/1000_shelves/{txt_file[:-5]}.jpg',img)
 
 if __name__=="__main__":
-    json_path = "dataset/ori/lishui_shelves"
+    json_path = "dataset/book_1_23"
 
-    txt_save = 'dataset/1000_shelves/labels/train'
-    src_folder = 'dataset/1000_shelves/images/train'
-    dst_folder = 'dataset/1000_shelves/images/val'
+    txt_save = 'dataset/multi_points/extracted_13/labels/train'
+    src_folder = 'dataset/multi_points/extracted_13/images/train'
+    dst_folder = 'dataset/multi_points/extracted_13/images/val'
     # 定义源标签文件夹和目标标签文件夹
-    src_label_folder = 'dataset/1000_shelves/labels/train'
-    dst_label_folder = 'dataset/1000_shelves/labels/val'
+    src_label_folder = 'dataset/multi_points/extracted_13/labels/train'
+    dst_label_folder = 'dataset/multi_points/extracted_13/labels/val'
     path_ = [src_folder,dst_folder,src_label_folder,dst_label_folder]
     for i in path_:
         os.makedirs(i,exist_ok=True)
 
-    # for filename in os.listdir(json_path):
-    #     if filename.endswith(".jpg"):
-    #         shutil.copy(os.path.join(json_path, filename), src_folder)
+    for filename in os.listdir(json_path):
+        if filename.endswith(".jpg"):
+            shutil.copy(os.path.join(json_path, filename), src_folder)
 
-    #lambelme_json_label_to_yolov_seg_label(json_path,txt_save)
+    lambelme_json_label_to_yolov_seg_label(json_path,txt_save)
+
     # 定义源文件夹和目标文件夹
     dataset_split(src_folder,dst_folder,src_label_folder,dst_label_folder)

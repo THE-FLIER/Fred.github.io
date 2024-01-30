@@ -30,9 +30,9 @@ def sort_keypoints(keypoints):
     return np.array(sorted_keypoints)
 
 def main():
-    book_path = 'dataset/coco_500_extract'
+    book_path = 'dataset/augment_1_22'
     shelve_path = glob.glob(book_path + "/*.json")
-    ori_book_image_save_path_ = 'dataset/ori/700_seg'
+    ori_book_image_save_path_ = 'dataset/lishui_crop'
     for jsonfile in shelve_path:
         a = 1
         b = 1

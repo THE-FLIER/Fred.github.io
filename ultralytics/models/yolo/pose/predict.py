@@ -47,4 +47,5 @@ class PosePredictor(DetectionPredictor):
             img_path = self.batch[0][i]
             results.append(
                 Results(orig_img, path=img_path, names=self.model.names, boxes=pred[:, :6], keypoints=pred_kpts))
+
         return results

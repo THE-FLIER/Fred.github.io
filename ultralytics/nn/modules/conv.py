@@ -11,7 +11,7 @@ import torch.nn as nn
 from torch.nn import init
 
 __all__ = ('Conv', 'Conv2', 'LightConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus', 'GhostConv',
-           'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'RepConv', 'GAM_Attention', "ResBlock_CBAM", "PSA")
+           'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'RepConv', 'GAM_Attention', "ResBlock_CBAM", "PSA","DilateAttention")
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
@@ -425,3 +425,33 @@ class Concat(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
+class DilateAttention(nn.Module):
+    "Implementation of Dilate-attention"
+    def __init__(self, head_dim, qk_scale=None, attn_drop=0, kernel_size=3, dilation=1):
+        super().__init__()
+        self.head_dim = head_dim
+        self.scale = qk_scale or head_dim ** -0.5
+        self.kernel_size=kernel_size
+        self.unfold = nn.Unfold(kernel_size, dilation, dilation*(kernel_size-1)//2, 1)
+        self.attn_drop = nn.Dropout(attn_drop)
+
+        self.query = nn.Conv2d(head_dim, head_dim, kernel_size=1)
+        self.key = nn.Conv2d(head_dim, head_dim, kernel_size=1)
+        self.value = nn.Conv2d(head_dim, head_dim, kernel_size=1)
+
+    def forward(self,x):
+        #B, C//3, H, W
+        B, d, H, W = x.shape
+
+        q = self.query(x).view(B, self.head_dim, d // self.head_dim, -1)
+        k = self.key(x).view(B, self.head_dim, d // self.head_dim, -1)
+        v = self.value(x).view(B, self.head_dim, d // self.head_dim, -1)
+
+        q = q.reshape([B, d//self.head_dim, self.head_dim, 1 ,H*W]).permute(0, 1, 4, 3, 2)  # B,h,N,1,d
+        k = self.unfold(k).reshape([B, d//self.head_dim, self.head_dim, self.kernel_size*self.kernel_size, H*W]).permute(0, 1, 4, 2, 3)  #B,h,N,d,k*k
+        attn = (q @ k) * self.scale  # B,h,N,1,k*k
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+        v = self.unfold(v).reshape([B, d//self.head_dim, self.head_dim, self.kernel_size*self.kernel_size, H*W]).permute(0, 1, 4, 3, 2)  # B,h,N,k*k,d
+        x = (attn @ v).transpose(1, 2).reshape(B, H, W, d)
+        return x

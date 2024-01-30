@@ -26,7 +26,6 @@ def generate_unique_id():
     uid = hashlib.md5(timestamp.encode()).hexdigest() # 使用MD5哈希函数生成唯一标识符
     return uid
 
-# 保存推理结果
 
 def polygons_to_mask2(img_shape, polygons):
     '''
@@ -129,31 +128,22 @@ def predict(image,parament):
     #dir = make_file(img)
     print(parament)
     with torch.no_grad():
-            result = model.predict(img, conf=float(parament['conf']), imgsz=640 ,save_txt=False, save_crop=True, boxes=False, device='0')
+            result = model.predict(img, conf=float(parament['conf']), imgsz=640 ,iou=0.45, save_txt=False, save_crop=True, boxes=False, device='0')
             for r in result:
                 keypoints = r.keypoints.xyn.cpu().numpy()
-
-                #sorted
-                keypoints = sort_keypoints(keypoints)
-
-                #scale expand
-                scaled_keypoints = scale_coordinates(keypoints, w, h)
-
-                #bbox
-                rects = max_area_rect(scaled_keypoints)
-
-                #duplicated removal
-                duplicated_rm = filter_boxes(rects, scaled_keypoints)
-
                 list1 = []
-                for points in duplicated_rm:
-                    if len(points) != 0:
-                        points = points[0:4]
-                        cropped1 = crop_rec(points, img)
+                if np.size(keypoints) !=0:
+                    keypoints = sort_keypoints(keypoints)
+                    #scale expand
+                    scaled_keypoints = scale_coordinates(keypoints, w, h)
+                    for points in scaled_keypoints:
+                        if len(points) != 0:
+                            points = points[0:4]
+                            cropped1 = crop_rec(points, img)
 
-                        # 从排序后的列表中提取图像，并将它们添加到新的列表中
-                        list1.append(cropped1)
-                    else:
+                            # 从排序后的列表中提取图像，并将它们添加到新的列表中
+                            list1.append(cropped1)
+                else:
                         list1 = 'NONE'
 
             # 保存到本地

@@ -18,7 +18,7 @@ TASKS = 'detect', 'segment', 'classify', 'pose'
 #TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'coco8-seg.yaml', 'classify': 'imagenet100', 'pose': 'coco8-pose.yaml'}
 TASK2DATA = {'detect': 'coco8.yaml', 'segment': 'book-seg.yaml', 'classify': 'imagenet100', 'pose': 'book-multi_point.yaml'}
 TASK2MODEL = {
-    'detect': 'yolov8n.pt',
+    'detect': 'yolov8m.pt',
     'segment': 'yolov8m-seg.pt',
     'classify': 'yolov8n-cls.pt',
     'pose': 'yolov8m-pose.pt'}

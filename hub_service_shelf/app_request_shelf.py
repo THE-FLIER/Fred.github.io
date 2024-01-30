@@ -19,7 +19,7 @@ app = Flask(__name__)
 import json
 # 模型加载
 
-model = "models/lishui.pt"
+model = "models/best.pt"
 model = YOLO(model)
 
 #unique signal
@@ -43,7 +43,7 @@ def polygons_to_mask2(img_shape, polygons):
     cv2.fillConvexPoly(mask, polygons, 1)  # 非int32 会报错
     return mask
 
-def expand_polygon(vertices, scale_x=1.05, scale_y=1.1):
+def expand_polygon(vertices, scale_x=1.05, scale_y=1.08):
     # 计算中心点
     center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(2)]
 
@@ -160,6 +160,22 @@ def crop_image(points,img):
 
     return cropped
 
+def sort_keypoints(keypoints):
+    # 对每个四边形，取其所有点的x坐标的平均值作为排序依据
+    sorted_keypoints = sorted(keypoints, key=lambda quad: np.mean([point[0] for point in quad]))
+    return np.array(sorted_keypoints)
+
+def scale_coordinates(keypoints, width, height):
+    scaled_keypoints = []
+    for quad in keypoints:
+        scaled_quad = []
+        for point in quad:
+            x, y = point
+            scaled_quad.append([x * width, y * height])
+        scaled_keypoints.append(scaled_quad)
+    return np.array(scaled_keypoints)
+
+
 # 预测
 def predict(image,parament):
     # 预处理图片
@@ -177,23 +193,11 @@ def predict(image,parament):
                 for r in result:
                     keypoints = r.keypoints.xyn.cpu().numpy()
                     if np.size(keypoints) != 0:
-                        dict1 = {}
-                        for points in keypoints:
-                            points[:, 0] = points[:, 0] * w
-                            points[:, 1] = points[:, 1] * h
-
-                            x = points[:, 0]
-                            y = points[:, 1]
-                            y1 = int(min(y))
-                            x1 = int(min(x))
-
-                            dict1[(x1, y1)] = points.tolist()
-
-                            # 按照键（即左上角坐标）对字典进行排序
-                            sorted_items = sorted(dict1.items())
-
-                            # 从排序后的列表中提取图像，并将它们添加到新的列表中
-                            list1 = [item[1] for item in sorted_items]
+                    # scale expand
+                        scaled_keypoints = scale_coordinates(keypoints, w, h)
+                        for points in scaled_keypoints:
+                            points = points[0:4]
+                            list1.append(points)
                     else:
                         list1 = 'None'
 
