@@ -17,5 +17,6 @@ kpt_shape: [13,2]  # number of keypoints, number of dims (2 for x,y or 3 for x,y
 # Classes
 names:
   0: book
+
 # Download script/URL (optional)
 #download: https://ultralytics.com/assets/coco8-seg.zip

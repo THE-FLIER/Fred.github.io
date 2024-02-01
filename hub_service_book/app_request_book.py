@@ -10,6 +10,7 @@ import pickle
 import hashlib
 import time
 import os
+import math
 from scipy.ndimage import gaussian_filter
 import asyncio
 
@@ -20,12 +21,44 @@ import json
 model = "models/best.pt"
 model = YOLO(model)
 
+def dist(p1, p2):
+    return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+
+def perspect(image,point,dst,shape):
+    # 读入图片
+    img = image
+    src = point
+    # 需要矫正成的形状，和上面一一对应
+
+    # 获取矫正矩阵，也就步骤
+    M = cv2.getPerspectiveTransform(src, dst)
+    # 进行矫正，把img
+    img = cv2.warpPerspective(img, M, shape)
+
+    # 展示校正后的图形
+    return np.array(img)
+
+def crop_perspect(book_point, image):
+
+    #width, height = (image.shape[1], image.shape[0])
+    # shelf_point
+    np_points = np.array(book_point, np.float32)
+    # sort
+    #np_points = BOOK_order_points_with_vitrual_center(np_points, width, height)
+    w = np.int32(dist(np_points[0],np_points[1]))
+
+    h = np.int32(dist(np_points[0], np_points[3]))
+    dst = np.array([[0, 0], [w, 0], [w, h], [0, h]], np.float32)
+
+    img_per = perspect(image, np_points, dst, (w, h))
+
+    return img_per
+
 #unique signal
 def generate_unique_id():
     timestamp = str(int(time.time() * 1000)) # 时间戳
     uid = hashlib.md5(timestamp.encode()).hexdigest() # 使用MD5哈希函数生成唯一标识符
     return uid
-
 
 def polygons_to_mask2(img_shape, polygons):
     '''
@@ -139,10 +172,11 @@ def predict(image,parament):
                     for points in scaled_keypoints:
                         if len(points) != 0:
                             points = points[0:4]
-                            cropped1 = crop_rec(points, img)
+                            cropped1 = crop_perspect(points, img)
 
                             # 从排序后的列表中提取图像，并将它们添加到新的列表中
                             list1.append(cropped1)
+
                 else:
                         list1 = 'NONE'
 

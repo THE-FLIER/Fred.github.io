@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 import json
 from sklearn.metrics.pairwise import euclidean_distances
+import time
+import math
 
 input = 'dataset/rectangle_img'
 
@@ -13,21 +15,145 @@ output = 'results/1_26/lishui_crop'
 
 # Load a pretrained YOLOv8n model
 model = YOLO('/home/zf/yolov8/runs/pose/1_23_boos_13_points_addition2/weights/best.pt')
-conf = 0.59
+conf = 0.6
 
-def polygons_to_mask2(img_shape, polygons):
+def _sorted(np_points,width, height):
+    width, height = width, height
+    # left_bottom = [0, 0]
+    # left_top = [0, height]
+    # right_bottom = [width, 0]
+    # right_top = [width, height]
+    sorted_points = []
+    np_points = np_points.tolist()
+    dst = [[0, 0], [width, 0], [width, height],[0, height]]
+    for p in dst:
+        min_dist = float("inf")
+        closest_point = None
+        for q in np_points:
+            d = dist(p, q)
+            if d < min_dist:
+                min_dist = d
+                closest_point = q
+        sorted_points.append(closest_point)
+
+
+    return np.array(sorted_points, np.float32)
+
+def dist(p1, p2):
+    return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+
+def pic_sorted(np_points,width, height):
+    width, height = width, height
+    # left_bottom = [0, 0]
+    # left_top = [0, height]
+    # right_bottom = [width, 0]
+    # right_top = [width, height]
+    sorted_points = []
+    np_points = np_points.tolist()
+    dst = [[0, 0], [width, 0], [width, height],[0, height]]
+    for p in dst:
+        min_dist = float("inf")
+        closest_point = None
+        for q in np_points:
+            d = dist(p, q)
+            if d < min_dist:
+                min_dist = d
+                closest_point = q
+        sorted_points.append(closest_point)
+
+
+    return np.array(sorted_points, np.float32)
+
+
+def expand_polygon(vertices, scale_x=1.05, scale_y=1.08):
+    # 计算中心点
+    center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(2)]
+
+    # 创建一个新的顶点列表
+    new_vertices = []
+
+    # 对于每个顶点
+    for vertex in vertices:
+        # 计算向量
+        vector = [vertex[i] - center[i] for i in range(2)]
+
+        # 扩大向量
+        vector = [vector[0] * scale_x, vector[1] * scale_y]
+
+        # 计算新的顶点
+        new_vertex = [center[i] + vector[i] for i in range(2)]
+
+        new_vertices.append(new_vertex)
+
+    return new_vertices
+
+def order_points_with_vitrual_center(pts, width, height):
+    pts = np.array(pts, dtype="float32")
+    pts_ = pts
+    center_x = np.mean(pts[:, 0])
+
+    # 分为左右两组
+    left = pts[pts[:, 0] < center_x]
+    right = pts[pts[:, 0] >= center_x]
+
+    # 在每组内部按照y值排序以分出上下
+    left_sorted = left[np.argsort(left[:, 1]), :]
+    right_sorted = right[np.argsort(right[:, 1]), :]
+
+    # 确保左右两组都有两个点
+    if left_sorted.shape[0] != 2 or right_sorted.shape[0] != 2:
+        sorted_pts = pic_sorted(pts_, width, height)
+        return sorted_pts
+    # 合并左上、右上、右下、左下的点
+    sorted_pts = np.array([left_sorted[0], right_sorted[0], right_sorted[1], left_sorted[1]], np.float32)
+    return sorted_pts
+
+def perspect(image,point,dst,shape):
+    # 读入图片
+    img = image
+    src = point
+    # 需要矫正成的形状，和上面一一对应
+
+    # 获取矫正矩阵，也就步骤
+    M = cv2.getPerspectiveTransform(src, dst)
+    # 进行矫正，把img
+    img = cv2.warpPerspective(img, M, shape)
+
+    # 展示校正后的图形
+    return np.array(img)
+
+def crop_perspect(book_point, image):
+
+    #width, height = (image.shape[1], image.shape[0])
+    # shelf_point
+    np_points = np.array(book_point, np.float32)
+    # sort
+    #np_points = BOOK_order_points_with_vitrual_center(np_points, width, height)
+    w = np.int32(dist(np_points[0], np_points[1]))
+
+    h = np.int32(dist(np_points[0], np_points[3]))
+    dst = np.array([[0, 0], [w, 0], [w, h], [0, h]], np.float32)
+
+    img_per = perspect(image, np_points, dst, (w, h))
+
+    return img_per
+
+
+def polygons_to_mask2(img_shape, polygon):
     '''
     边界点生成mask
     :param img_shape: [h,w]
-    :param polygons: labelme JSON中的边界点格式 [[x1,y1],[x2,y2],[x3,y3],...[xn,yn]]
+    :param polygon: labelme JSON中的边界点格式 [[x1,y1],[x2,y2],[x3,y3],...[xn,yn]]
     :return:
     '''
+
     mask = np.zeros(img_shape, dtype=np.uint8)
-    polygons = np.asarray(polygons, np.int32) # 这里必须是int32，其他类型使用fillPoly会报错
+    polygon = np.asarray(polygon, np.int32) # 这里必须是int32，其他类型使用fillPoly会报错
     # cv2.fillPoly(mask, polygons, 1) # 非int32 会报错
-    cv2.fillConvexPoly(mask, polygons, 1)  # 非int32 会报错
+    cv2.fillConvexPoly(mask, polygon, 1)  # 非int32 会报错
 
     return mask
+
 
 def filter_boxes(boxes: np.ndarray, keypoints, threshold=0.5):
     A = boxes.shape[0]
@@ -96,7 +222,31 @@ def calculate_fourth_point(points):
     x4 = A[0] + (C[0] - B[0])
     y4 = C[1] + (A[1] - B[1])
     D = [x4, y4]
-    return np.array([A,B,C,D])
+    return np.array([A, B, C, D])
+
+def BOOK_order_points_with_vitrual_center(pts, width, height):
+    pts = np.array(pts, dtype="float32")
+    pts_ =pts
+    center_x = np.mean(pts[:, 0])
+    center_y = np.mean(pts[:, 1])
+
+    # 分为上下两组
+    upper = pts[pts[:, 1] < center_y]
+    lower = pts[pts[:, 1] >= center_y]
+
+    # 在每组内部按照x值排序以分出左右
+    upper_sorted = upper[np.argsort(upper[:, 0]), :]
+    lower_sorted = lower[np.argsort(lower[:, 0]), :]
+
+    # 确保上下两组都有两个点
+    if upper_sorted.shape[0] != 2 or lower_sorted.shape[0] != 2:
+        sorted_pts = _sorted(pts_, width, height)
+        return sorted_pts
+
+    # 合并左上、右上、右下、左下的点
+    sorted_pts = np.array([upper_sorted[0], upper_sorted[1], lower_sorted[1], lower_sorted[0]], np.float32)
+    return sorted_pts
+
 
 def write_to_json(directory, filename, data):
     """
@@ -143,15 +293,21 @@ def crop_rec(book_dst, img_per_):
     return cropped1
 
 for file_name in os.listdir(input):
-    dir_list = [output,  f"{output}/full_ori",f'{output}/visual/']
+    dir_list = [output, f"{output}/full", f"{output}/full_ori",f'{output}/visual/']
     for i in dir_list:
         os.makedirs(i, exist_ok=True)
     if file_name.endswith('.png') or file_name.endswith('.jpg') or file_name.endswith('.jpeg'):
         # Run inference on 'bus.jpg'
         source_path = os.path.join(input, file_name)
         ori_img = cv2.imread(source_path)
+
         h, w, _ = ori_img.shape
+
+        start_time = time.time()
         results = model.predict(source_path, conf=conf, imgsz=640, save_txt=False, save_crop=False, boxes=False, device='0')  # results list
+        end_time = time.time()
+        preprocess_time = round((end_time - start_time) * 1000,1)
+        print(f"耗时： {preprocess_time}")
         a = file_name[:-4]
         filename = f'{a}.json'
         save = f'{output}/crop/{a}'
@@ -163,7 +319,7 @@ for file_name in os.listdir(input):
             # im.show()  # show image
             im.save(f'{output}/visual/{file_name}')
             keypoints = r.keypoints.xyn.cpu().numpy()
-            if np.size(keypoints) !=0:
+            if np.size(keypoints) != 0:
                 keypoints = sort_keypoints(keypoints)
                 c = 1
                 black_img = np.zeros([h, w], dtype=np.uint8)
@@ -178,34 +334,25 @@ for file_name in os.listdir(input):
                 for points in duplicated_rm:
                     if len(points) != 0:
                         points = points[0:4]
-                        cropped1 = crop_rec(points, ori_img)
+                        cropped1 = crop_perspect(points, ori_img)
+                        cropped2 = crop_rec(points, ori_img)
                         # for i, point in enumerate(points):
                         #     cv2.circle(ori_img_, np.int32(point), 2, (255, 155, 255), 4)
                         #     cv2.putText(ori_img_, str(i + 1), np.int32(point), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
                         # # 保存结果
-                        cv2.imwrite(f'{save}/{c}.jpg', cropped1)
+                        cv2.imwrite(f'{save}/{c}_p.jpg', cropped1)
+                        cv2.imwrite(f'{save}/{c}_o.jpg', cropped2)
 
                         c += 1
                         mask_ = polygons_to_mask2([h, w], points)
                         res[mask_ > 0] = ori_img[mask_ > 0]
+
                         polygons = np.asarray(points, np.int32)
                         cv2.fillConvexPoly(black_img, polygons, 1)
 
-                # data = {
-                #     "version": "5.2.1",
-                #     "flags": {},
-                #     "shapes": shapes,
-                #     "imagePath": f'{a}.jpg',
-                #     "imageData": None,
-                #     "imageWidth": w,
-                #     "imageHeight": h
-                # }
-                #
-                # write_to_json(input, filename, data)
-
                 #cv2.imwrite(f"{output}/full/{a}.jpg", black_img * 255)
                 cv2.imwrite(f"{output}/full_ori/{a}_ori.jpg", res)
-                # cv2.imwrite(f"{output}/{a}_ori.jpg", ori_img_)
+                cv2.imwrite(f"{output}/{a}_ori.jpg", ori_img_)
 
             else:
                 print('No Detection')
