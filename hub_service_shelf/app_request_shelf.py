@@ -29,7 +29,6 @@ def generate_unique_id():
     return uid
 
 # 保存推理结果
-
 def polygons_to_mask2(img_shape, polygons):
     '''
     边界点生成mask
@@ -175,7 +174,6 @@ def scale_coordinates(keypoints, width, height):
         scaled_keypoints.append(scaled_quad)
     return np.array(scaled_keypoints)
 
-
 # 预测
 def predict(image,parament):
     # 预处理图片
@@ -197,7 +195,7 @@ def predict(image,parament):
                         scaled_keypoints = scale_coordinates(keypoints, w, h)
                         for points in scaled_keypoints:
                             points = points[0:4]
-                            list1.append(points)
+                            list1.append(points.tolist())
                     else:
                         list1 = 'None'
 
@@ -222,19 +220,8 @@ def preprocess(image):
 
 # 返回base64
 def transform(outputs):
-    image_list = []
     if 'None' not in outputs:
-        if is_np(outputs):
-                # 转换为Image格式
-                pil_img = Image.fromarray(outputs)
-                # 编码为base64
-                buff = io.BytesIO()
-                pil_img.save(buff, format="PNG")
-                img_str = base64.b64encode(buff.getvalue()).decode('utf-8')
-                # 添加到列表
-                image_list.append(img_str)
-        else:
-            image_list = outputs
+        image_list = outputs.tolist()
     else:
         image_list = None
 
@@ -274,7 +261,7 @@ def get_prediction():
     parament = pickle.loads(parament)
     img_bytes = file.read()
     result = predict(img_bytes, parament)
-    result = transform(result)
+    #result = transform(result)
 
     return jsonify({'content': result})
 

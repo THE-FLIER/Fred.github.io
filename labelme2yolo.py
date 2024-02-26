@@ -240,8 +240,6 @@ def lambelme_json_label_to_yolov_seg_label(json_path,txt_save):
                 #
                 f.write(txt_content)
 
-
-
                 #obb
                 # norm_points_list = make_points(np_points, np_w_h)
                 # txt_content = f"0 " + " ".join(
@@ -255,12 +253,15 @@ def lambelme_json_label_to_yolov_seg_label(json_path,txt_save):
         # cv2.imwrite(f'dataset/1000_shelves/{txt_file[:-5]}.jpg',img)
 
 if __name__=="__main__":
+    #labelme json文件位置
     json_path = "dataset/book_1_23"
 
+    #数据集结构
     txt_save = 'dataset/multi_points/extracted_13/labels/train'
     src_folder = 'dataset/multi_points/extracted_13/images/train'
     dst_folder = 'dataset/multi_points/extracted_13/images/val'
-    # 定义源标签文件夹和目标标签文件夹
+
+    # 定义源标签文件夹和目标标签文件夹进行数据集划分8：2
     src_label_folder = 'dataset/multi_points/extracted_13/labels/train'
     dst_label_folder = 'dataset/multi_points/extracted_13/labels/val'
     path_ = [src_folder,dst_folder,src_label_folder,dst_label_folder]

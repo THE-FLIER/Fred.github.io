@@ -36,7 +36,6 @@ def _sorted(np_points,width, height):
                 closest_point = q
         sorted_points.append(closest_point)
 
-
     return np.array(sorted_points, np.float32)
 
 def dist(p1, p2):
@@ -61,52 +60,7 @@ def pic_sorted(np_points,width, height):
                 closest_point = q
         sorted_points.append(closest_point)
 
-
     return np.array(sorted_points, np.float32)
-
-
-def expand_polygon(vertices, scale_x=1.05, scale_y=1.08):
-    # 计算中心点
-    center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(2)]
-
-    # 创建一个新的顶点列表
-    new_vertices = []
-
-    # 对于每个顶点
-    for vertex in vertices:
-        # 计算向量
-        vector = [vertex[i] - center[i] for i in range(2)]
-
-        # 扩大向量
-        vector = [vector[0] * scale_x, vector[1] * scale_y]
-
-        # 计算新的顶点
-        new_vertex = [center[i] + vector[i] for i in range(2)]
-
-        new_vertices.append(new_vertex)
-
-    return new_vertices
-
-def order_points_with_vitrual_center(pts, width, height):
-    pts = np.array(pts, dtype="float32")
-    pts_ = pts
-    center_x = np.mean(pts[:, 0])
-
-    # 分为左右两组
-    left = pts[pts[:, 0] < center_x]
-    right = pts[pts[:, 0] >= center_x]
-
-    # 在每组内部按照y值排序以分出上下
-    left_sorted = left[np.argsort(left[:, 1]), :]
-    right_sorted = right[np.argsort(right[:, 1]), :]
-
-    # 确保左右两组都有两个点
-    if left_sorted.shape[0] != 2 or right_sorted.shape[0] != 2:
-        sorted_pts = pic_sorted(pts_, width, height)
-        return sorted_pts
-    # 合并左上、右上、右下、左下的点
-    sorted_pts = np.array([left_sorted[0], right_sorted[0], right_sorted[1], left_sorted[1]], np.float32)
-    return sorted_pts
 
 def perspect(image,point,dst,shape):
     # 读入图片
@@ -124,11 +78,9 @@ def perspect(image,point,dst,shape):
 
 def crop_perspect(book_point, image):
 
-    #width, height = (image.shape[1], image.shape[0])
     # shelf_point
     np_points = np.array(book_point, np.float32)
     # sort
-    #np_points = BOOK_order_points_with_vitrual_center(np_points, width, height)
     w = np.int32(dist(np_points[0], np_points[1]))
 
     h = np.int32(dist(np_points[0], np_points[3]))
@@ -153,50 +105,6 @@ def polygons_to_mask2(img_shape, polygon):
     cv2.fillConvexPoly(mask, polygon, 1)  # 非int32 会报错
 
     return mask
-
-
-def filter_boxes(boxes: np.ndarray, keypoints, threshold=0.5):
-    A = boxes.shape[0]
-    keep = np.ones(A, dtype=bool)
-    for i in range(A):
-        if not keep[i]:
-            continue
-        for j in range(i+1, A):
-            if not keep[j]:
-                continue
-            xy_max = np.minimum(boxes[i, 2:], boxes[j, 2:])
-            xy_min = np.maximum(boxes[i, :2], boxes[j, :2])
-
-            # 计算交集面积
-            inter = np.clip(xy_max-xy_min, a_min=0, a_max=np.inf)
-            inter = inter[0]*inter[1]
-
-            # 计算每个矩阵的面积
-            area_i = (boxes[i, 2]-boxes[i, 0])*(boxes[i, 3] - boxes[i, 1])
-            area_j = (boxes[j, 2]-boxes[j, 0])*(boxes[j, 3] - boxes[j, 1])
-
-            # 计算交并比
-            iou = inter/(area_i+area_j-inter)
-
-            # 如果交并比大于0.5，删除面积较小的边界框
-            if iou > threshold:
-                if area_i < area_j:
-                    keep[i] = False
-                    break
-                else:
-                    keep[j] = False
-
-    return keypoints[keep]
-
-#获取最大外接矩形
-def max_area_rect(keypoints):
-    rects = []
-    for quad in keypoints:
-        quad = np.array(quad)
-        x_min, y_min = np.min(quad, axis=0)
-        x_max, y_max = np.max(quad, axis=0)
-        rects.append([x_min, y_min, x_max, y_max])
-    return np.array(rects)
 
 #* width height
 def scale_coordinates(keypoints, width, height):
@@ -304,7 +212,7 @@ for file_name in os.listdir(input):
         h, w, _ = ori_img.shape
 
         start_time = time.time()
-        results = model.predict(source_path, conf=conf, imgsz=640, save_txt=False, save_crop=False, boxes=False, device='0')  # results list
+        results = model.predict(source_path, conf=conf, imgsz=640,iou=0.45, save_txt=False, save_crop=False, boxes=False, device='0')  # results list
         end_time = time.time()
         preprocess_time = round((end_time - start_time) * 1000,1)
         print(f"耗时： {preprocess_time}")
@@ -327,11 +235,10 @@ for file_name in os.listdir(input):
                 shapes = []
 
                 scaled_keypoints = scale_coordinates(keypoints, w, h)
-                rects = max_area_rect(scaled_keypoints)
-                duplicated_rm = filter_boxes(rects, scaled_keypoints)
+
 
                 ori_img_ = ori_img
-                for points in duplicated_rm:
+                for points in scaled_keypoints:
                     if len(points) != 0:
                         points = points[0:4]
                         cropped1 = crop_perspect(points, ori_img)

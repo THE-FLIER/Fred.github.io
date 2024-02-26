@@ -64,7 +64,7 @@ def run(args):
 def pre(img, paraments):
     parament_binary = pickle.dumps(paraments)
     files = {'file': open(img, 'rb').read(), 'parament': parament_binary}
-    url = 'http://172.16.0.145:8100/predict'
+    url = 'http://172.16.0.145:5002/predict'
     response = requests.post(url, files=files)
     output = response.json()["content"]
 
