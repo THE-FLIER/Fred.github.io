@@ -1,6 +1,8 @@
 # 目前训练最好的书脊和书格检测模型
 ### 书脊
     yolov8/hub_service_book/best_book.pt
+    项目结果路径：/home/zf/yolov8/runs/pose/1_15_shelves_13_points
+        
 ### 书格
     yolov8/hub_service_shelf/best_shelf.pt
 
